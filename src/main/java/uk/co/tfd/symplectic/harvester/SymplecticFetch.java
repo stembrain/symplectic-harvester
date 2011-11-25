@@ -18,51 +18,34 @@
  */
 package uk.co.tfd.symplectic.harvester;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.Map.Entry;
+import java.util.Set;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vivoweb.harvester.util.InitLog;
-import org.vivoweb.harvester.util.WebAide;
 import org.vivoweb.harvester.util.args.ArgDef;
 import org.vivoweb.harvester.util.args.ArgList;
 import org.vivoweb.harvester.util.args.ArgParser;
 import org.vivoweb.harvester.util.repo.RecordHandler;
-import org.vivoweb.harvester.util.repo.RecordStreamOrigin;
-import org.vivoweb.harvester.util.repo.XMLRecordOutputStream;
-import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import ch.qos.logback.core.util.Loader;
 
 public class SymplecticFetch {
 
@@ -74,7 +57,6 @@ public class SymplecticFetch {
 			.getLogger(SymplecticFetch.class);
 	private static String database = "symplectic";
 	private RecordHandler rh;
-	private OutputStreamWriter osWriter;
 
 
 	protected SymplecticFetch(RecordHandler rh, String database) {
@@ -105,7 +87,7 @@ public class SymplecticFetch {
 			LOGGER.info("SymplecticFetch: Start");
 			SymplecticFetch sf = new SymplecticFetch(getParser(
 					"SymplecticFetch", database).parse(args));
-			sf.execute();
+			sf.execute("http://fashion.symplectic.org:2020/publications-cantab-api/objects?categories=");
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage());
 			LOGGER.debug("Stacktrace:", e);
@@ -116,13 +98,10 @@ public class SymplecticFetch {
 		LOGGER.info("SymplecticFetch: End");
 	}
 
-	private OutputStreamWriter getOsWriter()
-			throws UnsupportedEncodingException {
-		return osWriter;
-	}
 
 	/**
 	 * Executes the task
+	 * @param baseUrl 
 	 * 
 	 * @throws UnsupportedEncodingException
 	 * 
@@ -134,21 +113,61 @@ public class SymplecticFetch {
 	 * @throws SAXException
 	 * @throws DOMException
 	 * @throws NoSuchAlgorithmException
+	 * @throws AtomEntryLoadException 
 	 */
 
-	private void execute() throws DOMException, NoSuchAlgorithmException,
+	private void execute(String baseUrl) throws DOMException, NoSuchAlgorithmException,
 			UnsupportedEncodingException, IOException, SAXException,
 			ParserConfigurationException, TransformerFactoryConfigurationError,
-			TransformerException {
-		execute(new UserCategory(rh));
-		execute(new PublicationCategory(rh));
+			TransformerException, AtomEntryLoadException {
+		Map<String, AtomEntryLoader> toLoad = new LinkedHashMap<String,AtomEntryLoader>() {
+			@Override
+			public AtomEntryLoader put(String url, AtomEntryLoader loader) {
+				LOGGER.info("ToLoad Added {} {}",url,loader);
+				return super.put(url, loader);
+			}
+			
+			@Override
+			public AtomEntryLoader remove(Object url) {
+				LOGGER.info("ToLoad Removed {} {}",url);
+				return super.remove(url);
+			}
+		};
+		Set<String> loaded = new HashSet<String>(){
+			@Override
+			public boolean add(String e) {
+				LOGGER.info("Loaded {} ",e);
+				return super.add(e);
+			}
+		};
+		toLoad.put(baseUrl+"user", new APIObject(rh, "user", toLoad, loaded, true));
+		int i = 0;
+		while(toLoad.size() > 0 && i < 200 ) {
+			LOGGER.info("ToDo list contains {} urls ",toLoad.size());
+			Entry<String, AtomEntryLoader> next = toLoad.entrySet().iterator().next();
+			AtomEntryLoader loader = next.getValue();
+			if ( loader.isList() ) {
+				LOGGER.info("Loading List {} ",next.getKey());
+				execute(loader, next.getKey());
+				loaded.add(next.getKey());
+				toLoad.remove(next.getKey());							
+			} else {
+				LOGGER.info("Loading Object {} ",next.getKey());
+				loadRecords(next.getKey(),loader);
+				loaded.add(next.getKey());
+				toLoad.remove(next.getKey());							
+			}
+			i++;
+		}
+		LOGGER.info("End ToDo list contains {} urls ",toLoad.size());
+		
 	}
 
-	private void execute(Category category) throws IOException, DOMException,
+	private void execute(AtomEntryLoader category, String firstPageUrl) throws IOException, DOMException,
 			SAXException, ParserConfigurationException,
 			TransformerFactoryConfigurationError, TransformerException,
-			NoSuchAlgorithmException {
-		Map<String, Object> queryEnv = runESearch(false, category);
+			NoSuchAlgorithmException, AtomEntryLoadException {
+		Map<String, Object> queryEnv = runESearch(false, firstPageUrl);
 		int nrecords = Integer.parseInt(String.valueOf(queryEnv
 				.get(RESULTS_COUNT_ENV)));
 		int itemsPerPage = Integer.parseInt(String.valueOf(queryEnv
@@ -159,51 +178,37 @@ public class SymplecticFetch {
 		}
 		
 		// for the moment, limit to 20 pages.
-		npages = Math.min(npages, 20);
+		npages = Math.min(npages, 1);
 
 		LOGGER.info("Fetching " + nrecords + " records from search");
 		for (int page = 1; page <= npages; page++) {
-			fetchRecords(page, category);
+			fetchRecords(page, category, firstPageUrl);
 		}
 	}
 
-	private void fetchRecords(int page, Category category) throws IOException,
+	private void fetchRecords(int page, AtomEntryLoader category, String firstPageUrl) throws IOException,
 			SAXException, ParserConfigurationException, DOMException,
 			TransformerFactoryConfigurationError, TransformerException,
-			NoSuchAlgorithmException {
+			NoSuchAlgorithmException, AtomEntryLoadException {
 		StringBuilder urlSb = new StringBuilder();
-		urlSb.append("http://fashion.symplectic.org:2020/publications-cantab-api/objects?categories=");
-		urlSb.append(category.getId());
-		urlSb.append("&page=");
-		urlSb.append(page);
-		try {
-			loadRecords(urlSb.toString(), category);
-		} catch (MalformedURLException e) {
-			throw new IOException("Query URL incorrectly formatted", e);
+		urlSb.append(firstPageUrl);
+		if ( firstPageUrl.contains("?"))  {
+		    urlSb.append("&page=");
+		} else {
+			urlSb.append("?page=");		
 		}
+		urlSb.append(page);
+		category.addPage(urlSb.toString());
 	}
 
-	private void loadRecords(String url, Category requestedCategory)
-			throws SAXException, IOException, ParserConfigurationException,
-			DOMException, TransformerFactoryConfigurationError,
-			TransformerException, NoSuchAlgorithmException {
+	private void loadRecords(String url, AtomEntryLoader requestedCategory)
+			throws AtomEntryLoadException, MalformedURLException, SAXException, IOException, ParserConfigurationException {
 		Document doc = XmlAide.loadXmlDocument(url);
 
-		NodeList results = doc.getElementsByTagName("api:object");
+		NodeList results = doc.getElementsByTagName("entry");
 		LOGGER.info("Got {}", results.getLength() + " results ");
 		for (int i = 0; i < results.getLength(); i++) {
-			Node result = results.item(i);
-			NamedNodeMap attributes = result.getAttributes();
-			String category = attributes.getNamedItem("category")
-					.getNodeValue();
-			if (requestedCategory.handles(category)) {
-				requestedCategory.loadCategory(attributes.getNamedItem("href")
-						.getNodeValue());
-				requestedCategory.loadRelationships(XmlAide.findAttribute(
-						result, "api:relationships", "href"));
-			} else {
-				LOGGER.warn("Unexpected Category [{}] != [{}] ", requestedCategory.getId(), category);
-			}
+			requestedCategory.loadEntry(results.item(i));
 		}
 
 	}
@@ -212,6 +217,7 @@ public class SymplecticFetch {
 	 * Find out about the target system, getting parameters.
 	 * 
 	 * @param category
+	 * @param firstPageURL 
 	 * @param searchTerm2
 	 * @return
 	 * @throws ParserConfigurationException
@@ -219,12 +225,9 @@ public class SymplecticFetch {
 	 * @throws SAXException
 	 * @throws MalformedURLException
 	 */
-	private Map<String, Object> runESearch(boolean logMessage, Category category)
+	private Map<String, Object> runESearch(boolean logMessage, String firstPageURL)
 			throws MalformedURLException, SAXException, IOException,
 			ParserConfigurationException {
-
-		String firstPageURL = "http://fashion.symplectic.org:2020/publications-cantab-api/objects?categories="
-				+ category.getId();
 		Map<String, Object> queryEnv = new HashMap<String, Object>();
 
 		Document doc = XmlAide.loadXmlDocument(firstPageURL);

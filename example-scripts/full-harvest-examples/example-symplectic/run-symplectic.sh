@@ -52,7 +52,7 @@ cd ..
 #	data, you will want to comment out this line since it could prevent you from having
 # 	the required harvest data.  
 rm -rf data
-# cp -r datasafe data
+cp -r datasafe data
 
 # Execute Fetch
 # This stage of the script is where the information is gathered together into one local
@@ -61,7 +61,7 @@ rm -rf data
 # The symplecticFetch tool in particular takes the data from the chosen source described in its
 #	configuration XML file and places it into record set in the flat RDF directly 
 #	related to the rows, columns and tables described in the target database.
-harvester-symplecticfetch -X symplecticfetch.config.xml
+# harvester-symplecticfetch -X symplecticfetch.config.xml
 
 # Execute Translate
 # This is the part of the script where the input data is transformed into valid RDF

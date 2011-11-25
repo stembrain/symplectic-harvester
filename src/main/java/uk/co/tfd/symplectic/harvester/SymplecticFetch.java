@@ -18,21 +18,10 @@
  */
 package uk.co.tfd.symplectic.harvester;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -46,18 +35,10 @@ import org.vivoweb.harvester.util.args.ArgList;
 import org.vivoweb.harvester.util.args.ArgParser;
 import org.vivoweb.harvester.util.repo.RecordHandler;
 import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class SymplecticFetch {
 
-	private static final String UPDATED_ENV = "updated";
-	private static final String SCHEMA_VERSION_ENV = "api:schema-version";
-	private static final String ITEMS_PER_PAGE_ENV = "items-per-page";
-	private static final String RESULTS_COUNT_ENV = "results-count";
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(SymplecticFetch.class);
 	private static String database = "symplectic";
@@ -125,197 +106,28 @@ public class SymplecticFetch {
 			UnsupportedEncodingException, IOException, SAXException,
 			ParserConfigurationException, TransformerFactoryConfigurationError,
 			TransformerException, AtomEntryLoadException {
-		Map<String, AtomEntryLoader> toLoad = new LinkedHashMap<String,AtomEntryLoader>() {
-			@Override
-			public AtomEntryLoader put(String url, AtomEntryLoader loader) {
-				LOGGER.info("ToLoad Added {} {}",url,loader);
-				return super.put(url, loader);
-			}
-			
-			@Override
-			public AtomEntryLoader remove(Object url) {
-				LOGGER.info("ToLoad Removed {} {}",url);
-				return super.remove(url);
-			}
-		};
-		Set<String> loaded = new HashSet<String>(){
-			@Override
-			public boolean add(String e) {
-				LOGGER.info("Loaded {} ",e);
-				return super.add(e);
-			}
-		};
-		load(toLoad,loaded);
-		toLoad.put(baseUrl+"user", new APIObject(rh, "user", toLoad, loaded, true));
+		ProgressTracker progress = new ProgressTracker("loadstate",rh);
+		PageConverter pageConverter = new PageConverter(new APIObject(rh, "publication", progress));
+		pageConverter.addAll(baseUrl+"publication");
+		pageConverter = new PageConverter(new APIObject(rh, "user", progress));
+		pageConverter.addAll(baseUrl+"user");
 		int i = 0;
-		while(toLoad.size() > 0 && i < 200 ) {
-			LOGGER.info("ToDo list contains {} urls ",toLoad.size());
-			Entry<String, AtomEntryLoader> next = toLoad.entrySet().iterator().next();
+		while(progress.hasPending() && i < 200 ) {
+			LOGGER.info("ToDo list contains {} urls ",progress.pending());
+			Entry<String, AtomEntryLoader> next = progress.next();
 			AtomEntryLoader loader = next.getValue();
-			if ( loader.isList() ) {
-				LOGGER.info("Loading List {} ",next.getKey());
-				execute(loader, next.getKey());
-				loaded.add(next.getKey());
-				toLoad.remove(next.getKey());							
-			} else {
-				LOGGER.info("Loading Object {} ",next.getKey());
-				loadRecords(next.getKey(),loader);
-				loaded.add(next.getKey());
-				toLoad.remove(next.getKey());							
-			}
+			LOGGER.info("Loading Object {} ",next.getKey());
+			loader.loadEntry(next.getKey());
 			i++;
-			checkpoint(toLoad, loaded);
 		}
-		LOGGER.info("End ToDo list contains {} urls ",toLoad.size());
-		for (String l : loaded ) {
-			LOGGER.info("Loaded {} ",l);
-		}
-		checkpoint(toLoad, loaded);
+		LOGGER.info("End ToDo list contains {} urls ",progress.pending());
+		progress.dumpLoaded();
+		progress.checkpoint();
 		
 	}
 
-	private void checkpoint(Map<String, AtomEntryLoader> toLoad,
-			Set<String> loaded) throws IOException {
-		File f = new File("loadstate.chk");
-		DataOutputStream out = new DataOutputStream(new FileOutputStream(f));
-		out.writeLong(System.currentTimeMillis());
-		out.writeInt(toLoad.size());
-		out.writeInt(loaded.size());
-		for ( Entry<String, AtomEntryLoader> e : toLoad.entrySet()) {
-			out.writeUTF(e.getKey());
-			out.writeUTF(e.getValue().getType());
-			out.writeBoolean(e.getValue().isList());
-		}
-		for ( String s : loaded) {
-			out.writeUTF(s);
-		}
-		out.close();
-		File loadstate = new File("loadstate");
-		File loadstateSafe = new File("loadstate.safe");
-		loadstateSafe.delete();
-		loadstate.renameTo(loadstateSafe);
-		f.renameTo(new File("loadstate"));
-		loadstateSafe.delete();
-		LOGGER.info("Checkpoint done");
-	}
 
-	private void load(Map<String, AtomEntryLoader> toLoad, Set<String> loaded) throws IOException {
-		File loadstate = new File("loadstate");
-		File loadstateSafe = new File("loadstate.safe");
-		File toloadFile = null;
-		if ( loadstate.exists()) {
-			toloadFile = loadstate;
-		} else if ( loadstateSafe.exists()) {
-			toloadFile = loadstateSafe;
-		} else {
-			return;
-		}
-		DataInputStream in = new DataInputStream(new FileInputStream(toloadFile));
-		long lastSave = in.readLong();
-		int ntoload = in.readInt();
-		int nloaded = in.readInt();
-		toLoad.clear();
-		loaded.clear();
-		for ( int i = 0; i < ntoload; i++) {
-			String url = in.readUTF();
-			String type = in.readUTF();
-			boolean list = in.readBoolean();
-			if ( "relationship".equals(type)) {
-				toLoad.put(url, new APIRelationship(rh, toLoad, loaded, list));
-			} else {
-				toLoad.put(url, new APIObject(rh, type, toLoad, loaded, list));
-			}
-		}
-		for ( int i = 0; i < nloaded; i++) {
-			loaded.add(in.readUTF());
-		}
-		LOGGER.info("Checkpoint Loaded {} {}",toLoad.size(), loaded.size());
-		
-	}
 
-	private void execute(AtomEntryLoader category, String firstPageUrl) throws IOException, DOMException,
-			SAXException, ParserConfigurationException,
-			TransformerFactoryConfigurationError, TransformerException,
-			NoSuchAlgorithmException, AtomEntryLoadException {
-		Map<String, Object> queryEnv = runESearch(false, firstPageUrl);
-		int nrecords = Integer.parseInt(String.valueOf(queryEnv
-				.get(RESULTS_COUNT_ENV)));
-		int itemsPerPage = Integer.parseInt(String.valueOf(queryEnv
-				.get(ITEMS_PER_PAGE_ENV)));
-		int npages = nrecords / itemsPerPage;
-		if (nrecords % itemsPerPage > 0) {
-			npages++;
-		}
-		
-		// for the moment, limit to 20 pages.
-		npages = Math.min(npages, 1);
-
-		LOGGER.info("Fetching " + nrecords + " records from search");
-		for (int page = 1; page <= npages; page++) {
-			fetchRecords(page, category, firstPageUrl);
-		}
-	}
-
-	private void fetchRecords(int page, AtomEntryLoader category, String firstPageUrl) throws IOException,
-			SAXException, ParserConfigurationException, DOMException,
-			TransformerFactoryConfigurationError, TransformerException,
-			NoSuchAlgorithmException, AtomEntryLoadException {
-		StringBuilder urlSb = new StringBuilder();
-		urlSb.append(firstPageUrl);
-		if ( firstPageUrl.contains("?"))  {
-		    urlSb.append("&page=");
-		} else {
-			urlSb.append("?page=");		
-		}
-		urlSb.append(page);
-		category.addPage(urlSb.toString());
-	}
-
-	private void loadRecords(String url, AtomEntryLoader requestedCategory)
-			throws AtomEntryLoadException, MalformedURLException, SAXException, IOException, ParserConfigurationException {
-		Document doc = XmlAide.loadXmlDocument(url);
-
-		NodeList results = doc.getElementsByTagName("entry");
-		LOGGER.info("Got {}", results.getLength() + " results ");
-		for (int i = 0; i < results.getLength(); i++) {
-			requestedCategory.loadEntry(results.item(i));
-		}
-
-	}
-
-	/**
-	 * Find out about the target system, getting parameters.
-	 * 
-	 * @param category
-	 * @param firstPageURL 
-	 * @param searchTerm2
-	 * @return
-	 * @throws ParserConfigurationException
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws MalformedURLException
-	 */
-	private Map<String, Object> runESearch(boolean logMessage, String firstPageURL)
-			throws MalformedURLException, SAXException, IOException,
-			ParserConfigurationException {
-		Map<String, Object> queryEnv = new HashMap<String, Object>();
-
-		Document doc = XmlAide.loadXmlDocument(firstPageURL);
-
-		Node pagination = doc.getElementsByTagName("api:pagination").item(0);
-		NamedNodeMap nnmap = pagination.getAttributes();
-		queryEnv.put(RESULTS_COUNT_ENV, nnmap.getNamedItem(RESULTS_COUNT_ENV)
-				.getNodeValue());
-		queryEnv.put(ITEMS_PER_PAGE_ENV, nnmap.getNamedItem(ITEMS_PER_PAGE_ENV)
-				.getNodeValue());
-		queryEnv.put(SCHEMA_VERSION_ENV,
-				doc.getElementsByTagName(SCHEMA_VERSION_ENV).item(0)
-						.getNodeValue());
-		queryEnv.put(UPDATED_ENV, doc.getElementsByTagName(UPDATED_ENV).item(0)
-				.getNodeValue());
-
-		return queryEnv;
-	}
 
 	/**
 	 * Get the ArgParser for this task

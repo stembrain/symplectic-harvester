@@ -13,12 +13,10 @@ public interface AtomEntryLoader {
 	 * @param item the Atom Entry to be parsed
 	 * @throws AtomEntryLoadException
 	 */
-	void loadEntry(Node item) throws AtomEntryLoadException;
+	void loadEntry(String url) throws AtomEntryLoadException;
 
-	/**
-	 * @return is this a list or a single entry
-	 */
-	boolean isList();
+	
+	void addPage(Node item) throws AtomEntryLoadException;
 
 	/**
 	 * @param url the url of the list page to add to the pending list of pages to load.
@@ -26,5 +24,6 @@ public interface AtomEntryLoader {
 	void addPage(String url);
 
 	String getType();
+
 
 }

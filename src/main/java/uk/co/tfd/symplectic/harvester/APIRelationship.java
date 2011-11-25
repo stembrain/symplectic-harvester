@@ -38,6 +38,10 @@ public class APIRelationship implements AtomEntryLoader, RecordStreamOrigin {
 		this.loaded = loaded;
 		this.list = list;
 	}
+	
+	public String getType() {
+		return type;
+	}
 
 
 	@Override

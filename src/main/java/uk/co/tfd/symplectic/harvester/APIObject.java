@@ -44,6 +44,11 @@ public class APIObject implements AtomEntryLoader, RecordStreamOrigin {
 		this.list = list;
 	}
 
+	
+	@Override
+	public String getType() {
+		return type;
+	}
 
 	public void loadEntry(Node entry) throws AtomEntryLoadException {
 		String category = XmlAide

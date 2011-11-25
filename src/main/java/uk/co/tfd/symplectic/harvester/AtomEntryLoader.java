@@ -25,4 +25,6 @@ public interface AtomEntryLoader {
 	 */
 	void addPage(String url);
 
+	String getType();
+
 }

@@ -18,6 +18,11 @@
  */
 package uk.co.tfd.symplectic.harvester;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -140,6 +145,7 @@ public class SymplecticFetch {
 				return super.add(e);
 			}
 		};
+		load(toLoad,loaded);
 		toLoad.put(baseUrl+"user", new APIObject(rh, "user", toLoad, loaded, true));
 		int i = 0;
 		while(toLoad.size() > 0 && i < 200 ) {
@@ -158,8 +164,72 @@ public class SymplecticFetch {
 				toLoad.remove(next.getKey());							
 			}
 			i++;
+			checkpoint(toLoad, loaded);
 		}
 		LOGGER.info("End ToDo list contains {} urls ",toLoad.size());
+		for (String l : loaded ) {
+			LOGGER.info("Loaded {} ",l);
+		}
+		checkpoint(toLoad, loaded);
+		
+	}
+
+	private void checkpoint(Map<String, AtomEntryLoader> toLoad,
+			Set<String> loaded) throws IOException {
+		File f = new File("loadstate.chk");
+		DataOutputStream out = new DataOutputStream(new FileOutputStream(f));
+		out.writeLong(System.currentTimeMillis());
+		out.writeInt(toLoad.size());
+		out.writeInt(loaded.size());
+		for ( Entry<String, AtomEntryLoader> e : toLoad.entrySet()) {
+			out.writeUTF(e.getKey());
+			out.writeUTF(e.getValue().getType());
+			out.writeBoolean(e.getValue().isList());
+		}
+		for ( String s : loaded) {
+			out.writeUTF(s);
+		}
+		out.close();
+		File loadstate = new File("loadstate");
+		File loadstateSafe = new File("loadstate.safe");
+		loadstateSafe.delete();
+		loadstate.renameTo(loadstateSafe);
+		f.renameTo(new File("loadstate"));
+		loadstateSafe.delete();
+		LOGGER.info("Checkpoint done");
+	}
+
+	private void load(Map<String, AtomEntryLoader> toLoad, Set<String> loaded) throws IOException {
+		File loadstate = new File("loadstate");
+		File loadstateSafe = new File("loadstate.safe");
+		File toloadFile = null;
+		if ( loadstate.exists()) {
+			toloadFile = loadstate;
+		} else if ( loadstateSafe.exists()) {
+			toloadFile = loadstateSafe;
+		} else {
+			return;
+		}
+		DataInputStream in = new DataInputStream(new FileInputStream(toloadFile));
+		long lastSave = in.readLong();
+		int ntoload = in.readInt();
+		int nloaded = in.readInt();
+		toLoad.clear();
+		loaded.clear();
+		for ( int i = 0; i < ntoload; i++) {
+			String url = in.readUTF();
+			String type = in.readUTF();
+			boolean list = in.readBoolean();
+			if ( "relationship".equals(type)) {
+				toLoad.put(url, new APIRelationship(rh, toLoad, loaded, list));
+			} else {
+				toLoad.put(url, new APIObject(rh, type, toLoad, loaded, list));
+			}
+		}
+		for ( int i = 0; i < nloaded; i++) {
+			loaded.add(in.readUTF());
+		}
+		LOGGER.info("Checkpoint Loaded {} {}",toLoad.size(), loaded.size());
 		
 	}
 

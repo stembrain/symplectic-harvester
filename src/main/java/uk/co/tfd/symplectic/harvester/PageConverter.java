@@ -12,9 +12,9 @@ public class PageConverter {
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(PageConverter.class);
 
-	private AtomEntryLoader loader;
+	private AtomEntryListLoader loader;
 
-	public PageConverter(AtomEntryLoader loader) {
+	public PageConverter(AtomEntryListLoader loader) {
 		this.loader = loader;
 	}
 
@@ -35,7 +35,7 @@ public class PageConverter {
 		// for the moment, limit to 20 pages.
 		npages = Math.min(npages, 20);
 
-		LOGGER.info("Fetching " + nrecords + " records from search");
+		LOGGER.info("Fetching {} records from search {} ", nrecords, firstPageUrl);
 		for (int page = 1; page <= npages; page++) {
 			StringBuilder urlSb = new StringBuilder();
 			urlSb.append(firstPageUrl);
@@ -44,11 +44,12 @@ public class PageConverter {
 			} else {
 				urlSb.append("?page=");
 			}
+			urlSb.append(page);
 
 			doc = XmlAide.loadXmlDocument(urlSb.toString());
 
 			NodeList results = doc.getElementsByTagName("entry");
-			LOGGER.info("Got {}", results.getLength() + " results ");
+			LOGGER.info("Got {} results from {} ", results.getLength(), urlSb.toString());
 			for (int i = 0; i < results.getLength(); i++) {
 				loader.addPage(results.item(i));
 			}

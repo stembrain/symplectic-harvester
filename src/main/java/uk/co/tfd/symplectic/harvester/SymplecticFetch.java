@@ -107,10 +107,8 @@ public class SymplecticFetch {
 			ParserConfigurationException, TransformerFactoryConfigurationError,
 			TransformerException, AtomEntryLoadException {
 		ProgressTracker progress = new ProgressTracker("loadstate",rh);
-		PageConverter pageConverter = new PageConverter(new APIObject(rh, "publication", progress));
-		pageConverter.addAll(baseUrl+"publication");
-		pageConverter = new PageConverter(new APIObject(rh, "user", progress));
-		pageConverter.addAll(baseUrl+"user");
+		progress.toload(baseUrl+"publication", new APIObjects(rh, "publications", progress));
+		progress.toload(baseUrl+"user", new APIObjects(rh, "users", progress));
 		int i = 0;
 		while(progress.hasPending() && i < 200 ) {
 			LOGGER.info("ToDo list contains {} urls ",progress.pending());

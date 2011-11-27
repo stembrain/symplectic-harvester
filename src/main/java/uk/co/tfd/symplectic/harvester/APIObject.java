@@ -49,10 +49,6 @@ public class APIObject implements AtomEntryLoader, RecordStreamOrigin {
 		rh.addRecord(type + id, data, getClass());
 	}
 
-	@Override
-	public void addPage(String url) {
-		tracker.toload(url, new APIObject(rh, type, tracker));
-	}
 
 	@Override
 	public void loadEntry(String url) throws AtomEntryLoadException {
@@ -77,21 +73,5 @@ public class APIObject implements AtomEntryLoader, RecordStreamOrigin {
 		}
 	}
 
-	@Override
-	public void addPage(Node entry) throws AtomEntryLoadException {
-		String category = XmlAide
-				.findAttribute(entry, "api:object", "category");
-		if (type.equals(category)) {
-			Node apiObject = XmlAide.findNode(entry, "api:object");
-			String userUrl = XmlAide.findAttribute(apiObject, "href");
-			tracker.toload(userUrl, new APIObject(rh, type, tracker));
-
-			String relationships = XmlAide.findAttribute(apiObject,
-					"api:relationships", "href");
-			PageConverter pageConverter = new PageConverter(new APIRelationship(rh, tracker));
-			pageConverter.addAll(relationships);
-		}
-
-	}
 
 }

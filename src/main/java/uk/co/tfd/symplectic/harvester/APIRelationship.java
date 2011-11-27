@@ -45,11 +45,7 @@ public class APIRelationship implements AtomEntryLoader, RecordStreamOrigin {
 	}
 
 
-	@Override
-	public void addPage(String url) {
-		tracker.toload(url, new APIRelationship(rh, tracker));
-	}
-
+	
 	@Override
 	public void loadEntry(String url) throws AtomEntryLoadException {
 		try {
@@ -81,31 +77,5 @@ public class APIRelationship implements AtomEntryLoader, RecordStreamOrigin {
 		}
 	}
 
-	@Override
-	public void addPage(Node item) throws AtomEntryLoadException {
-		String relationshipHref = XmlAide.findAttribute(item,
-				"api:relationship", "href");
-		if (relationshipHref != null) {
-			tracker.toload(relationshipHref, new APIRelationship(rh, tracker));
-		}
-		// load api:related/api:object@href
-		Node relationship = XmlAide.findNode(item, "api:relationship");
-		if ( relationship != null ) {
-			Node object = XmlAide.findNode(item, "api:object");
-			if ( object != null ) {
-				String category = XmlAide.findAttribute(object, "category");
-				String href = XmlAide.findAttribute(object, "href");
-				if ( category != null && href != null ) {
-					tracker.toload(href, new APIObject(rh, category, tracker));
-				}
-				String relationshipsHref = XmlAide.findAttribute(object, "api:relationships",  "href");
-				if ( relationshipsHref != null  ) {
-					PageConverter pageConverter = new PageConverter(new APIRelationship(rh, tracker));
-					pageConverter.addAll(relationshipsHref);
-				}
-			}
-		}
-		
-	}
 
 }

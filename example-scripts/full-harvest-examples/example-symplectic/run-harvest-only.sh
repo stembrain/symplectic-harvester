@@ -51,7 +51,7 @@ cd ..
 #	If you are continuing a partial run or wish to use the old and already retrieved
 #	data, you will want to comment out this line since it could prevent you from having
 # 	the required harvest data.  
-rm -rf data
+# rm -rf data
 # cp -r datasafe data
 
 # Execute Fetch
@@ -64,6 +64,8 @@ rm -rf data
 harvester-symplecticfetch -X symplecticfetch.config.xml -w TRACE
 rm -rf datasafe
 cp -r data datasafe
+cp loadstate datasafe
+cp loadstate-fail datasafe
 exit
 
 # Execute Translate

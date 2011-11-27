@@ -18,6 +18,7 @@
  */
 package uk.co.tfd.symplectic.harvester;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -35,6 +36,7 @@ import org.vivoweb.harvester.util.args.ArgList;
 import org.vivoweb.harvester.util.args.ArgParser;
 import org.vivoweb.harvester.util.repo.RecordHandler;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 public class SymplecticFetch {
@@ -105,17 +107,23 @@ public class SymplecticFetch {
 	private void execute(String baseUrl) throws DOMException, NoSuchAlgorithmException,
 			UnsupportedEncodingException, IOException, SAXException,
 			ParserConfigurationException, TransformerFactoryConfigurationError,
-			TransformerException, AtomEntryLoadException {
+			TransformerException {
 		ProgressTracker progress = new ProgressTracker("loadstate",rh);
-		progress.toload(baseUrl+"publication", new APIObjects(rh, "publications", progress));
+		// re-scan relationships to extract API objects reScanRelationships(progress);
 		progress.toload(baseUrl+"user", new APIObjects(rh, "users", progress));
+//		progress.toload(baseUrl+"publication", new APIObjects(rh, "publications", progress));
 		int i = 0;
-		while(progress.hasPending() && i < 200 ) {
+		while(progress.hasPending() && i < 10000 ) {
 			LOGGER.info("ToDo list contains {} urls ",progress.pending());
 			Entry<String, AtomEntryLoader> next = progress.next();
 			AtomEntryLoader loader = next.getValue();
 			LOGGER.info("Loading Object {} ",next.getKey());
-			loader.loadEntry(next.getKey());
+			
+			try {
+				loader.loadEntry(next.getKey());
+			} catch (AtomEntryLoadException e) {
+				LOGGER.error(e.getMessage(),e);
+			}
 			i++;
 		}
 		LOGGER.info("End ToDo list contains {} urls ",progress.pending());
@@ -126,6 +134,24 @@ public class SymplecticFetch {
 
 
 
+
+	@SuppressWarnings("unused")
+	private void reScanRelationships(ProgressTracker tracker) {
+		File publicationsXml = new File("data/raw-records");
+		APIObject userObject = new APIObject(rh,"user", tracker);
+		APIObject publicationObject = new APIObject(rh,"publication", tracker);
+		for ( File f : publicationsXml.listFiles() ) {
+			if ( f.getName().startsWith("relationship")) {
+				try {
+					Document doc = XmlAide.loadXmlDocument(f.toURI().toURL().toString());
+					userObject.loadEntrys(doc);
+					publicationObject.loadEntrys(doc);
+				} catch (Exception e) {
+					LOGGER.error(e.getMessage(),e);
+				}
+			}
+		}
+	}
 
 	/**
 	 * Get the ArgParser for this task

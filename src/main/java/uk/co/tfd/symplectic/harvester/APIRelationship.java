@@ -10,7 +10,6 @@ import org.vivoweb.harvester.util.repo.RecordStreamOrigin;
 import org.vivoweb.harvester.util.repo.XMLRecordOutputStream;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class APIRelationship implements AtomEntryLoader, RecordStreamOrigin {
@@ -21,6 +20,8 @@ public class APIRelationship implements AtomEntryLoader, RecordStreamOrigin {
 	private RecordHandler rh;
 	private String type;
 	private ProgressTracker tracker;
+	private APIObject userObject;
+	private APIObject publicationObject;
 	protected static XMLRecordOutputStream baseXMLROS = new XMLRecordOutputStream(
 			new String[] { "api:relationship" },
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<relationship xmlns=\"http://www.symplectic.co.uk/vivo/\" xmlns:api=\"http://www.symplectic.co.uk/publications/api\">\n",
@@ -31,6 +32,8 @@ public class APIRelationship implements AtomEntryLoader, RecordStreamOrigin {
 		this.rh = rh;
 		this.type = "relationship";
 		this.tracker = tracker;
+		userObject = new APIObject(rh, "user", tracker);
+		publicationObject  = new APIObject(rh, "publication", tracker);
 	}
 	
 	public String getType() {
@@ -71,8 +74,11 @@ public class APIRelationship implements AtomEntryLoader, RecordStreamOrigin {
 				osWriter.flush();
 
 			}
+			userObject.loadEntrys(doc);
+			publicationObject.loadEntrys(doc);
 			tracker.loaded(url);
 		} catch (Exception e) {
+			tracker.loadedFailed(url);
 			throw new AtomEntryLoadException(e.getMessage(), e);
 		}
 	}

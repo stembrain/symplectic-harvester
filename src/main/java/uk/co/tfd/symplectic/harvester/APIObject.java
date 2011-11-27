@@ -11,6 +11,7 @@ import org.vivoweb.harvester.util.repo.XMLRecordOutputStream;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * This class represents an api:object in 2 forms. A Atom feed containing a list
@@ -49,7 +50,6 @@ public class APIObject implements AtomEntryLoader, RecordStreamOrigin {
 		rh.addRecord(type + id, data, getClass());
 	}
 
-
 	@Override
 	public void loadEntry(String url) throws AtomEntryLoadException {
 		try {
@@ -69,9 +69,43 @@ public class APIObject implements AtomEntryLoader, RecordStreamOrigin {
 			osWriter.flush();
 			tracker.loaded(url);
 		} catch (Exception e) {
+			tracker.loadedFailed(url);
 			throw new AtomEntryLoadException(e.getMessage(), e);
 		}
 	}
 
+	public void loadEntrys(Document doc) {
+		NodeList user = doc.getElementsByTagName("api:object");
+		for (int i = 0; i < user.getLength(); i++) {
+			Node item = user.item(i);
+			String category = XmlAide.findAttribute(item, "category");
+			if (type.equals(category)) {
+				Element object = (Element) item;
+				String url = XmlAide.findAttribute(item, "href");
+				if (url != null && !tracker.isLoaded(url)) {
+					LOGGER.info("Extracting {} from relationship ",url);
+					try {
+						object.setAttribute("uriref", XmlAide.hash(url));
+						String userAsString = XmlAide.getXmlFromNode(object);
+						if (osWriter == null) {
+							osWriter = new OutputStreamWriter(baseXMLROS
+									.clone().setRso(this), "UTF-8");
+						}
+						osWriter.write(userAsString);
+						// file close statements. Warning, not closing the file
+						// will
+						// leave incomplete xml files and break the translate
+						// method
+						osWriter.write("\n");
+						osWriter.flush();
+						tracker.loaded(url);
+					} catch (Exception e) {
+						tracker.loadedFailed(url);
+					}
+				}
+			}
+		}
+
+	}
 
 }

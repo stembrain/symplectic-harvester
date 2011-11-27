@@ -1,14 +1,10 @@
 package uk.co.tfd.symplectic.harvester;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.vivoweb.harvester.util.repo.RecordHandler;
 import org.w3c.dom.Node;
 
 public class APIRelationships implements AtomEntryLoader, AtomEntryListLoader {
 
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(APIRelationships.class);
 	private RecordHandler rh;
 	private String type;
 	private ProgressTracker tracker;
@@ -34,6 +30,7 @@ public class APIRelationships implements AtomEntryLoader, AtomEntryListLoader {
 			pageConverter.addAll(url);
 			tracker.loaded(url);
 		} catch (Exception e) {
+			tracker.loadedFailed(url);
 			throw new AtomEntryLoadException(e.getMessage(), e);
 		}
 	}

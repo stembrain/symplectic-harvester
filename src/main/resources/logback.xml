@@ -124,7 +124,7 @@
     <appender-ref ref="Error"/>
     <appender-ref ref="AllAppender"/>
   </logger>
-  <logger name="uk" level="${logback-level:-DEBUG}">
+  <logger name="uk" level="${logback-level:-INFO}">
     <appender-ref ref="Console"/>
     <appender-ref ref="Error"/>
     <appender-ref ref="AllAppender"/>

@@ -62,7 +62,7 @@
 <% ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ %>
      -->
 	<Param name="tempJenaDir">data/temp-score-model</Param>
-	<Param name="namespace">http://symplectic.org/vivo/harvest/symplectic/pub/</Param>
+	<Param name="namespace">http://symplectic.org/vivo/harvest/symplectic/publication/</Param>
 	<Param name="reloadInput">true</Param><!-- our input changed due to match (and we are using match's output) -->
 	
 	<!--COMPARISIONS -->

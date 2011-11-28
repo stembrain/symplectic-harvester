@@ -51,8 +51,8 @@ cd ..
 #	If you are continuing a partial run or wish to use the old and already retrieved
 #	data, you will want to comment out this line since it could prevent you from having
 # 	the required harvest data.  
-rm -rf data
-cp -r datasafe data
+#rm -rf data
+#cp -r datasafe data
 
 # Execute Fetch
 # This stage of the script is where the information is gathered together into one local
@@ -62,7 +62,7 @@ cp -r datasafe data
 #	configuration XML file and places it into record set in the flat RDF directly 
 #	related to the rows, columns and tables described in the target database.
 ## harvester-symplecticfetch -X symplecticfetch.config.xml -w TRACE
-## exit
+# exit
 
 # Execute Translate
 # This is the part of the script where the input data is transformed into valid RDF
@@ -89,13 +89,13 @@ harvester-qualify -X qualify-clear-score-predicates.config.xml
 # This is where the new people from the harvest are given uris within the namespace of Vivo
 # 	If there is an issue with uris being in another namespace after import, make sure this step
 #   was completed for those uris.
-#ieb#harvester-changenamespace -X changenamespace-publication.config.xml
+harvester-changenamespace -X changenamespace-publication.config.xml
 
 # Execute ChangeNamespace to get unmatched authorships into current namespace
 # This is where the new people from the harvest are given uris within the namespace of Vivo
 # 	If there is an issue with uris being in another namespace after import, make sure this step
 #   was completed for those uris.
-#ieb#harvester-changenamespace -X changenamespace-authorship.config.xml
+harvester-changenamespace -X changenamespace-authorship.config.xml
 
 # Uncomment to Execute ChangeNamespace to get unmatched authors into current namespace
 # This is where the new people from the harvest are given uris within the namespace of Vivo
@@ -144,7 +144,7 @@ harvester-transfer -o vivo.model.xml -r data/vivo-subtractions.rdf.xml -m
 harvester-transfer -o vivo.model.xml -r data/vivo-additions.rdf.xml
 
 #Output some counts
-PUBS=`cat data/vivo-additions.rdf.xml | grep pmid | wc -l`
+PUBS=`cat data/vivo-additions.rdf.xml | grep 'http://www.symplectic.co.uk/vivo/#Publication' | wc -l`
 AUTHORS=`cat data/vivo-additions.rdf.xml | grep 'http://xmlns.com/foaf/0.1/Person' | wc -l`
 AUTHORSHIPS=`cat data/vivo-additions.rdf.xml | grep Authorship | wc -l`
 echo "Imported $PUBS publications, $AUTHORS authors, and $AUTHORSHIPS authorships"

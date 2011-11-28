@@ -42,17 +42,17 @@
     </encoder>
     <filter class="ch.qos.logback.classic.filter.LevelFilter">
       <level>TRACE</level>
-      <onMatch>${console-trace:-ACCEPT}</onMatch>
+      <onMatch>${console-trace:-DENY}</onMatch>
       <onMismatch>NEUTRAL</onMismatch>
     </filter>
     <filter class="ch.qos.logback.classic.filter.LevelFilter">
       <level>DEBUG</level>
-      <onMatch>${console-debug:-ACCEPT}</onMatch>
+      <onMatch>${console-debug:-DENY}</onMatch>
       <onMismatch>NEUTRAL</onMismatch>
     </filter>
     <filter class="ch.qos.logback.classic.filter.LevelFilter">
       <level>INFO</level>
-      <onMatch>${console-info:-ACCEPT}</onMatch>
+      <onMatch>${console-info:-DENY}</onMatch>
       <onMismatch>NEUTRAL</onMismatch>
     </filter>
     <filter class="ch.qos.logback.classic.filter.LevelFilter">
@@ -124,12 +124,12 @@
     <appender-ref ref="Error"/>
     <appender-ref ref="AllAppender"/>
   </logger>
-  <logger name="uk" level="${logback-level:-DEBUG}">
+  <logger name="uk" level="${logback-level:-INFO}">
     <appender-ref ref="Console"/>
     <appender-ref ref="Error"/>
     <appender-ref ref="AllAppender"/>
   </logger>
-  <logger name="org.vivoweb.harvester.util.repo" level="${logback-level:-DEBUG}">
+  <logger name="org.vivoweb.harvester.util.repo" level="${logback-level:-INFO}">
     <appender-ref ref="Console"/>
     <appender-ref ref="Error"/>
     <appender-ref ref="AllAppender"/>

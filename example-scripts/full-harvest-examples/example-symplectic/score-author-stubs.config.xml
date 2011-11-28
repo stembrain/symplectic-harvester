@@ -62,7 +62,7 @@
 <% ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ %>
      -->
 	<Param name="tempJenaDir">data/temp-score-model</Param>
-	<Param name="namespace">http://symplectic.org/vivo/harvest/symplectic/author/</Param>
+	<Param name="namespace">http://symplectic.org/vivo/harvest/symplectic/user/</Param>
 	
 	<!--COMPARISIONS -->
 	<!--AUTHORSHIP LINK-->

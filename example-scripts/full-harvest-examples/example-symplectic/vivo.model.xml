@@ -98,7 +98,7 @@
 <%  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  %>
 -->
 <Model>
-    <Param name="type">rdb</Param>
+    <Param name="type">sdb</Param>
     <Param name="dbLayout">layout2</Param>
     <Param name="dbClass">com.mysql.jdbc.Driver</Param>
     <Param name="dbType">MySQL</Param>

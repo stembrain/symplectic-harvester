@@ -12,6 +12,6 @@
 	<Param name="vivoModel">vivo.model.xml</Param>
 	
 	<!--  OPTIONS -->
-	<Param name="oldNamespace">http://symplectic.org/vivo/harvest/symplectic/pub/</Param>
-	<Param name="newNamespace">http://vivo.sample.edu/individual/</Param>
+	<Param name="oldNamespace">http://symplectic.org/vivo/harvest/symplectic/publication/</Param>
+	<Param name="newNamespace">http://vivo.tfd.co.uk/individual/</Param>
 </Task>

@@ -13,5 +13,5 @@
 	
 	<!--  OPTIONS -->
 	<Param name="oldNamespace">http://symplectic.org/vivo/harvest/symplectic/authorship/</Param>
-	<Param name="newNamespace">http://vivo.sample.edu/individual/</Param>
+	<Param name="newNamespace">http://vivo.tfd.co.uk/individual/</Param>
 </Task>

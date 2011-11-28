@@ -30,6 +30,6 @@
 <%     input model.                                                                                                   %>
 -->
     <Param name="inputJena-predicates">http://www.w3.org/2000/01/rdf-schema#label</Param>
-    <Param name="namespace">http://symplectic.org/vivo/harvest/symplectic/author/</Param>
+    <Param name="namespace">http://symplectic.org/vivo/harvest/symplectic/user/</Param>
     <Param name="replace">true</Param>
 </Config>

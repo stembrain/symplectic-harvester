@@ -10,7 +10,7 @@
 
 	<!-- This will create indenting in xml readers -->
 	<xsl:output method="xml" indent="yes" />
-	<xsl:variable name="baseURI">http://symplectic.org/vivo/harvest/symplectic/</xsl:variable>
+	<xsl:variable name="baseURI">http://vivo.tfd.co.uk/individual/</xsl:variable>
 
 	<xsl:template match="/svo:object/api:object[@category='user']">
 		<rdf:RDF xmlns:owlPlus='http://www.w3.org/2006/12/owl2-xml#'
@@ -24,16 +24,14 @@
 			xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'>
 			
 			<!--  Main user object -->
-		    <rdf:Description rdf:about="{$baseURI}user/{@id}">
+		    <rdf:Description rdf:about="{$baseURI}user{@id}">
 		    	<ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
 				<score:email>
 					<xsl:value-of select="api:email-address" />
 				</score:email>
 				<rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person" />
 				<rdfs:label>
-					<xsl:value-of select="api:last-name" />
-					,
-					<xsl:value-of select="api:first-name" />
+					<xsl:value-of select="api:last-name" />, <xsl:value-of select="api:first-name" />
 				</rdfs:label>
 				<foaf:lastName>
 					<xsl:value-of select="api:last-name" />
@@ -48,7 +46,7 @@
 				<rdf:type
 					rdf:resource="http://vitro.mannlib.cornell.edu/ns/vitro/0.7#Flag1Value1Thing" />
 				<rdf:type
-					rdf:resource="http://www.symplectic.co.uk/vivo/#User" />
+					rdf:resource="http://www.symplectic.co.uk/vivo/User" />
 				<xsl:apply-templates select="api:organisation-defined-data" />
 			</rdf:Description>
 		</rdf:RDF>
@@ -64,7 +62,7 @@
 			xmlns:svo='http://www.symplectic.co.uk/vivo/' xmlns:api='http://www.symplectic.co.uk/publications/api'
 			xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'>
 			<!--  Main publication object -->
-		    <rdf:Description rdf:about="{$baseURI}publication/{@id}">
+		    <rdf:Description rdf:about="{$baseURI}publication{@id}">
 				<xsl:choose>
 					<xsl:when test="@type-id=5">
     					<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
@@ -81,7 +79,7 @@
 					</xsl:otherwise>
 				</xsl:choose>	    	 
                 <xsl:if test="api:records/api:record[1]/api:native/api:field[@name='publication-date']/api:date">
-				   <core:dateTimeValue rdf:resource="{$baseURI}publication/{@id}/publicationDate"/>
+				   <core:dateTimeValue rdf:resource="{$baseURI}publication{@id}-publicationDate"/>
                 </xsl:if>
 				
 				<ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
@@ -90,12 +88,31 @@
 		    
 		    <!--  publication date -->
             <xsl:if test="api:records/api:record[1]/api:native/api:field[@name='publication-date']/api:date">
-		      <rdf:Description  rdf:about="{$baseURI}publication/{@id}/publicationDate">
+		      <rdf:Description  rdf:about="{$baseURI}publication{@id}-publicationDate">
 		        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
                 <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
 		    	<xsl:apply-templates select="api:records/api:record[1]/api:native/api:field[@name='publication-date']"  mode="dateTimeValue" />
 		      </rdf:Description>
             </xsl:if>
+		</rdf:RDF>
+	</xsl:template>
+	<xsl:template match="/svo:relationship/api:relationship">
+		<rdf:RDF xmlns:owlPlus='http://www.w3.org/2006/12/owl2-xml#'
+			xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:skos='http://www.w3.org/2008/05/skos#'
+			xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' xmlns:owl='http://www.w3.org/2002/07/owl#'
+			xmlns:vocab='http://purl.org/vocab/vann/' xmlns:swvocab='http://www.w3.org/2003/06/sw-vocab-status/ns#'
+			xmlns:dc='http://purl.org/dc/elements/1.1/' xmlns:vitro='http://vitro.mannlib.cornell.edu/ns/vitro/0.7#'
+			xmlns:core='http://vivoweb.org/ontology/core#' xmlns:foaf='http://xmlns.com/foaf/0.1/'
+			xmlns:score='http://vivoweb.org/ontology/score#' xmlns:xs='http://www.w3.org/2001/XMLSchema#'
+			xmlns:svo='http://www.symplectic.co.uk/vivo/' xmlns:api='http://www.symplectic.co.uk/publications/api'
+			xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'>
+		     <!--  create the link -->
+		    <rdf:Description rdf:about="{$baseURI}authorship{@id}">
+    			<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+				<ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
+				<svo:relationship-type><xsl:value-of select="@type-id" /></svo:relationship-type>
+			</rdf:Description>			
+			
 		</rdf:RDF>
 	</xsl:template>
 
@@ -115,25 +132,25 @@
 			<xsl:variable name="userID" select="api:related[@direction='to']/api:object/@id" />
 
             <!--  add the authorship to the person -->
-		    <rdf:Description rdf:about="{$baseURI}user/{$userID}">
+		    <rdf:Description rdf:about="{$baseURI}user{$userID}">
 				<rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person" />
-				<core:authorInAuthorship rdf:resource="{$baseURI}authorship/{@id}"/>
+				<core:authorInAuthorship rdf:resource="{$baseURI}authorship{@id}"/>
 		    </rdf:Description>
 
 			<!--  add the author to the publication -->
-		    <rdf:Description rdf:about="{$baseURI}publication/{$publicationID}">
+		    <rdf:Description rdf:about="{$baseURI}publication{$publicationID}">
                <rdf:type rdf:resource="http://vivoweb.org/ontology/core#InformationResource"/>
-               <core:informationResourceInAuthorship rdf:resource="{$baseURI}authorship/{@id}"/>
+               <core:informationResourceInAuthorship rdf:resource="{$baseURI}authorship{@id}"/>
     		</rdf:Description>
 
 		     <!--  create the link -->
-		    <rdf:Description rdf:about="{$baseURI}authorship/{@id}">
+		    <rdf:Description rdf:about="{$baseURI}authorship{@id}">
     			<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
     			<rdf:type rdf:resource="http://vivoweb.org/ontology/core#Relationship"/>
     			<rdf:type rdf:resource="http://vivoweb.org/ontology/core#Authorship"/>
 				<ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
-    			<core:linkedAuthor rdf:resource="{$baseURI}user/{$userID}"/>
-    			<core:linkedInformationResource rdf:resource="{$baseURI}publication/{$publicationID}"/>
+    			<core:linkedAuthor rdf:resource="{$baseURI}user{$userID}"/>
+    			<core:linkedInformationResource rdf:resource="{$baseURI}publication{$publicationID}"/>
 			</rdf:Description>			
 		</rdf:RDF>
 	</xsl:template>
@@ -363,7 +380,7 @@
 
 
 	<xsl:template match="api:text" mode="symJournalRef">
-		<core:hasPublicationVenue rdf:resource="{$baseURI}journal/journal{.}" />
+		<core:hasPublicationVenue rdf:resource="{$baseURI}journal{.}" />
 	</xsl:template>
 
 </xsl:stylesheet>

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 
 #Copyright (c) 2010-2011 VIVO Harvester Team. For full list of contributors, please see the AUTHORS file provided.
 #All rights reserved.
@@ -16,6 +16,7 @@ export HARVESTER_INSTALL_DIR=/Users/ieb/Caret/vivo/vivo-harvester-code
 export EXTENSION_INSTALL_DIR=/Users/ieb/Caret/vivo/symplectic
 export HARVEST_NAME=example-symplectic
 export DATE=`date +%Y-%m-%d'T'%T`
+export JAVA_OPTS=" -DXXharvester-level=INFO"
 
 # Add harvester binaries to path for execution
 # The tools within this script refer to binaries supplied within the harvester
@@ -51,8 +52,8 @@ cd ..
 #	If you are continuing a partial run or wish to use the old and already retrieved
 #	data, you will want to comment out this line since it could prevent you from having
 # 	the required harvest data.  
-rm -rf data
-cp -r datasafe data
+#rm -rf data
+#cp -r datasafe data
 
 # Execute Fetch
 # This stage of the script is where the information is gathered together into one local
@@ -61,7 +62,7 @@ cp -r datasafe data
 # The symplecticFetch tool in particular takes the data from the chosen source described in its
 #	configuration XML file and places it into record set in the flat RDF directly 
 #	related to the rows, columns and tables described in the target database.
-# harvester-symplecticfetch -X symplecticfetch.config.xml
+harvester-symplecticfetch -X symplecticfetch.config.xml 
 
 # Execute Translate
 # This is the part of the script where the input data is transformed into valid RDF
@@ -77,103 +78,9 @@ harvester-xsltranslator -X xsltranslator.config.xml
 # -s refers to the source translated records file, which was just produced by the translator step
 # -o refers to the destination model for harvested data
 # -d means that this call will also produce a text dump file in the specified location 
-harvester-transfer -s translated-records.config.xml -o harvested-data.model.xml -d data/harvested-data/imported-records.rdf.xml
+# dont add to harvested data if not scoring harvester-transfer -s translated-records.config.xml -o harvested-data.model.xml -d data/harvested-data/imported-records.rdf.xml
+harvester-transfer -s translated-records.config.xml -o matched-data.model.xml -d data/matched-data/imported-records.rdf.xml
 
-##########
-# Author #
-##########
-# Execute Author Scoring and Matching
-# In the scoring phase the data in the harvest is compared to the data within Vivo and a new model
-# 	is created with the values / scores of the data comparisons.
-# We execute scores in 2 different steps, known as "tiered scoring". The initial score limits our input set to speed up performance 
-harvester-score -X score-author-first-last.config.xml
-harvester-score -X score-author-all.config.xml
-
-# Find matches using scores and rename nodes to matching uri
-# Using the data model created by the score phase, the match process changes the harvested uris for
-# 	comparison values above the chosen threshold within the xml configuration file.
-harvester-match -X match-author.config.xml
-
-# Clear author score data, since we are done with it
-harvester-jenaconnect -j score-data.model.xml -t
-
-########################################
-# Publication / Journal / Author Stubs #
-########################################
-# find previously ingested publication
-# Execute publication Scoring
-# In the scoring phase the data in the harvest is compared to the data within Vivo and a new model
-# 	is created with the values / scores of the data comparisons.
-#ieb#harvester-score -X score-publication.config.xml
-
-# find previously ingested journals
-# Execute Journal Scoring
-# In the scoring phase the data in the harvest is compared to the data within Vivo and a new model
-# 	is created with the values / scores of the data comparisons.
-#ieb#harvester-score -X score-journal.config.xml
-
-# find previously ingested author stubs
-# Execute author stub Scoring
-# In the scoring phase the data in the harvest is compared to the data within Vivo and a new model
-# 	is created with the values / scores of the data comparisons.
-#ieb#harvester-score -X score-author-stubs.config.xml
-
-# Find matches using scores and rename nodes to matching uri
-# Using the data model created by the score phase, the match process changes the harvested uris for
-# 	comparison values above the chosen threshold within the xml configuration file.
-#ieb#harvester-match -X match-exact.config.xml
-
-# Clear publication / journal / author-stubs score data, since we are done with it
-#ieb#harvester-jenaconnect -j score-data.model.xml -t
-
-##############
-# Authorship #
-##############
-# Execute Authorship Scoring and Matching
-# In the scoring phase the data in the harvest is compared to the data within Vivo and a new model
-# 	is created with the values / scores of the data comparisons.
-#ieb#harvester-score -X score-authorship.config.xml
-
-# Find matches using scores and rename nodes to matching uri
-# Using the data model created by the score phase, the match process changes the harvested uris for
-# 	comparison values above the chosen threshold within the xml configuration file.
-#ieb#harvester-match -X match-exact.config.xml
-
-# Clear authorship score data, since we are done with it
-#ieb#harvester-jenaconnect -j score-data.model.xml -t
-
-# Clear out any statements with predicates in the temporary 'score' namespace
-harvester-qualify -X qualify-clear-score-predicates.config.xml
-
-# Execute ChangeNamespace to get unmatched publications into current namespace
-# This is where the new people from the harvest are given uris within the namespace of Vivo
-# 	If there is an issue with uris being in another namespace after import, make sure this step
-#   was completed for those uris.
-#ieb#harvester-changenamespace -X changenamespace-publication.config.xml
-
-# Execute ChangeNamespace to get unmatched authorships into current namespace
-# This is where the new people from the harvest are given uris within the namespace of Vivo
-# 	If there is an issue with uris being in another namespace after import, make sure this step
-#   was completed for those uris.
-#ieb#harvester-changenamespace -X changenamespace-authorship.config.xml
-
-# Uncomment to Execute ChangeNamespace to get unmatched authors into current namespace
-# This is where the new people from the harvest are given uris within the namespace of Vivo
-# 	If there is an issue with uris being in another namespace after import, make sure this step
-#   was completed for those uris.
-harvester-smush -X smush-author-stubs.config.xml
-harvester-changenamespace -X changenamespace-authors.config.xml
-
-# OR Clear all author stubs (will do nothing if the above author ChangeNamespace and Smush are uncommented)
-# If you want to retain stubs or incomplete profiles of authors from publications, comment out this line
-# and uncomment the above ChangeNamespace and Smush
-#harvester-qualify -X qualify-clearstubs.config.xml
-
-# Execute ChangeNamespace to get unmatched journals into current namespace
-# This is where the new people from the harvest are given uris within the namespace of Vivo
-# 	If there is an issue with uris being in another namespace after import, make sure this step
-#   was completed for those uris.
-#ieb#harvester-changenamespace -X changenamespace-journal.config.xml
 
 # Perform an update
 # The harvester maintains copies of previous harvests in order to perform the same harvest twice
@@ -204,7 +111,7 @@ harvester-transfer -o vivo.model.xml -r data/vivo-subtractions.rdf.xml -m
 harvester-transfer -o vivo.model.xml -r data/vivo-additions.rdf.xml
 
 #Output some counts
-PUBS=`cat data/vivo-additions.rdf.xml | grep pmid | wc -l`
+PUBS=`cat data/vivo-additions.rdf.xml | grep 'http://www.symplectic.co.uk/vivo/#Publication' | wc -l`
 AUTHORS=`cat data/vivo-additions.rdf.xml | grep 'http://xmlns.com/foaf/0.1/Person' | wc -l`
 AUTHORSHIPS=`cat data/vivo-additions.rdf.xml | grep Authorship | wc -l`
 echo "Imported $PUBS publications, $AUTHORS authors, and $AUTHORSHIPS authorships"

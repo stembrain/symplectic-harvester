@@ -16,7 +16,7 @@ export HARVESTER_INSTALL_DIR=/Users/ieb/Caret/vivo/vivo-harvester-code
 export EXTENSION_INSTALL_DIR=/Users/ieb/Caret/vivo/symplectic
 export HARVEST_NAME=example-symplectic
 export DATE=`date +%Y-%m-%d'T'%T`
-export JAVA_OPTS=" -Dharvester-level=INFO"
+export JAVA_OPTS=" -DXXharvester-level=INFO"
 
 # Add harvester binaries to path for execution
 # The tools within this script refer to binaries supplied within the harvester
@@ -79,42 +79,9 @@ harvester-xsltranslator -X xsltranslator.config.xml
 # -s refers to the source translated records file, which was just produced by the translator step
 # -o refers to the destination model for harvested data
 # -d means that this call will also produce a text dump file in the specified location 
-harvester-transfer -s translated-records.config.xml -o harvested-data.model.xml -d data/harvested-data/imported-records.rdf.xml
+# dont add to harvested data if not scoring harvester-transfer -s translated-records.config.xml -o harvested-data.model.xml -d data/harvested-data/imported-records.rdf.xml
 harvester-transfer -s translated-records.config.xml -o matched-data.model.xml -d data/matched-data/imported-records.rdf.xml
 
-
-# Clear out any statements with predicates in the temporary 'score' namespace
-harvester-qualify -X qualify-clear-score-predicates.config.xml
-
-# Execute ChangeNamespace to get unmatched publications into current namespace
-# This is where the new people from the harvest are given uris within the namespace of Vivo
-# 	If there is an issue with uris being in another namespace after import, make sure this step
-#   was completed for those uris.
-harvester-changenamespace -X changenamespace-publication.config.xml
-
-# Execute ChangeNamespace to get unmatched authorships into current namespace
-# This is where the new people from the harvest are given uris within the namespace of Vivo
-# 	If there is an issue with uris being in another namespace after import, make sure this step
-#   was completed for those uris.
-harvester-changenamespace -X changenamespace-authorship.config.xml
-
-# Uncomment to Execute ChangeNamespace to get unmatched authors into current namespace
-# This is where the new people from the harvest are given uris within the namespace of Vivo
-# 	If there is an issue with uris being in another namespace after import, make sure this step
-#   was completed for those uris.
-harvester-smush -X smush-author-stubs.config.xml
-harvester-changenamespace -X changenamespace-authors.config.xml
-
-# OR Clear all author stubs (will do nothing if the above author ChangeNamespace and Smush are uncommented)
-# If you want to retain stubs or incomplete profiles of authors from publications, comment out this line
-# and uncomment the above ChangeNamespace and Smush
-#harvester-qualify -X qualify-clearstubs.config.xml
-
-# Execute ChangeNamespace to get unmatched journals into current namespace
-# This is where the new people from the harvest are given uris within the namespace of Vivo
-# 	If there is an issue with uris being in another namespace after import, make sure this step
-#   was completed for those uris.
-#ieb#harvester-changenamespace -X changenamespace-journal.config.xml
 
 # Perform an update
 # The harvester maintains copies of previous harvests in order to perform the same harvest twice

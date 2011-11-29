@@ -14,7 +14,8 @@ export CLASSPATH=$CLASSPATH:$HARVESTER_INSTALL_DIR/bin/harvester.jar:$HARVESTER_
 export CLASSPATH=$CLASSPATH:$HARVESTER_INSTALL_DIR/build/harvester.jar:$HARVESTER_INSTALL_DIR/build/dependency/*
 
 set -e
+default_query="select ?s ?p ?v where { ?s ?p ?v }"
+query=${2:-$default_query}
 
 
-
-harvester-jenaconnect -j $1  -q "select ?s ?p ?v where { ?s ?p ?v }"
+harvester-jenaconnect -j $1  -q "$query"

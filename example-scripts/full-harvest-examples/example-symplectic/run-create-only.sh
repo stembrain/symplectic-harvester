@@ -16,6 +16,7 @@ export HARVESTER_INSTALL_DIR=/Users/ieb/Caret/vivo/vivo-harvester-code
 export EXTENSION_INSTALL_DIR=/Users/ieb/Caret/vivo/symplectic
 export HARVEST_NAME=example-symplectic
 export DATE=`date +%Y-%m-%d'T'%T`
+export JAVA_OPTS=" -Dharvester-level=INFO"
 
 # Add harvester binaries to path for execution
 # The tools within this script refer to binaries supplied within the harvester

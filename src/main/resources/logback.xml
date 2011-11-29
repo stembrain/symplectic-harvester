@@ -129,6 +129,6 @@
     <appender-ref ref="Error"/>
     <appender-ref ref="AllAppender"/>
   </logger>
-  <root level="${root-level:-ERROR}"/>
+  <root level="${root-level:-INFO}"/>
   
 </configuration>

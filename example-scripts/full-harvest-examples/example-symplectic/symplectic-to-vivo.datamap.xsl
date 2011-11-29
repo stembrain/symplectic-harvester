@@ -114,6 +114,17 @@
 			<xsl:variable name="publicationID" select="api:related[@direction='from']/api:object/@id" />
 			<xsl:variable name="userID" select="api:related[@direction='to']/api:object/@id" />
 
+            <!--  add the authorship to the person -->
+		    <rdf:Description rdf:about="{$baseURI}user/{$userID}">
+				<rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person" />
+				<core:authorInAuthorship rdf:resource="{$baseURI}authorship/{@id}"/>
+		    </rdf:Description>
+
+			<!--  add the author to the publication -->
+		    <rdf:Description rdf:about="{$baseURI}publication/{$publicationID}">
+               <rdf:type rdf:resource="http://vivoweb.org/ontology/core#InformationResource"/>
+               <core:informationResourceInAuthorship rdf:resource="{$baseURI}authorship/{@id}"/>
+    		</rdf:Description>
 
 		     <!--  create the link -->
 		    <rdf:Description rdf:about="{$baseURI}authorship/{@id}">
@@ -121,7 +132,7 @@
     			<rdf:type rdf:resource="http://vivoweb.org/ontology/core#Relationship"/>
     			<rdf:type rdf:resource="http://vivoweb.org/ontology/core#Authorship"/>
 				<ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
-    			<core:linkedAuthor rdf:resource="{$baseURI}user/{@userID}"/>
+    			<core:linkedAuthor rdf:resource="{$baseURI}user/{$userID}"/>
     			<core:linkedInformationResource rdf:resource="{$baseURI}publication/{$publicationID}"/>
 			</rdf:Description>			
 		</rdf:RDF>

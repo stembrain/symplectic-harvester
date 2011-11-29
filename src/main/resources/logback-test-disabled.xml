@@ -1,4 +1,10 @@
 <configuration>
+  <root level="${root-level:-INFO}"/>
+  <logger name="ch.qos.logback" level="${logback-level:-ERROR}">
+    <appender-ref ref="Console"/>
+    <appender-ref ref="Error"/>
+    <appender-ref ref="AllAppender"/>
+  </logger>
   
   <appender name="AllAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <File>logs/${harvester-task:-harvester}.log</File>
@@ -52,17 +58,17 @@
     </filter>
     <filter class="ch.qos.logback.classic.filter.LevelFilter">
       <level>INFO</level>
-      <onMatch>${console-info:-DENY}</onMatch>
+      <onMatch>${console-info:-ACCEPT}</onMatch>
       <onMismatch>NEUTRAL</onMismatch>
     </filter>
     <filter class="ch.qos.logback.classic.filter.LevelFilter">
       <level>WARN</level>
-      <onMatch>DENY</onMatch>
+      <onMatch>ACCEPT</onMatch>
       <onMismatch>NEUTRAL</onMismatch>
     </filter>
     <filter class="ch.qos.logback.classic.filter.LevelFilter">
       <level>ERROR</level>
-      <onMatch>DENY</onMatch>
+      <onMatch>ACCEPT</onMatch>
       <onMismatch>NEUTRAL</onMismatch>
     </filter>
   </appender>
@@ -119,11 +125,6 @@
   	<appender-ref ref="Error"/>
   	<appender-ref ref="AllAppender"/>
   </logger>
-  <logger name="ch.qos.logback" level="${logback-level:-ERROR}">
-    <appender-ref ref="Console"/>
-    <appender-ref ref="Error"/>
-    <appender-ref ref="AllAppender"/>
-  </logger>
   <logger name="uk" level="${logback-level:-INFO}">
     <appender-ref ref="Console"/>
     <appender-ref ref="Error"/>
@@ -134,6 +135,5 @@
     <appender-ref ref="Error"/>
     <appender-ref ref="AllAppender"/>
   </logger>
-  <root level="${root-level:-ERROR}"/>
   
 </configuration>

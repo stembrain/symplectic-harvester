@@ -98,7 +98,7 @@
             </xsl:if>
 		</rdf:RDF>
 	</xsl:template>
-	<xsl:template match="/svo:relationship/api:relationship">
+	<xsl:template match="/svo:relationship/api:relationship[@type-id!=8]">
 		<rdf:RDF xmlns:owlPlus='http://www.w3.org/2006/12/owl2-xml#'
 			xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:skos='http://www.w3.org/2008/05/skos#'
 			xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' xmlns:owl='http://www.w3.org/2002/07/owl#'

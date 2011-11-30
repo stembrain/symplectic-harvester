@@ -1,6 +1,8 @@
 <!-- <?xml version="1.0"?> -->
-<!-- Header information for the Style Sheet The style sheet requires xmlns 
-	for each prefix you use in constructing the new elements -->
+<!-- 
+   | Copyright (c) 2011 Ian Boston for Symplectic, relicensed under the AGPL license in repository https://github.com/ieb/symplectic-harvester
+   | Please see the LICENSE file for more details
+ -->
 <xsl:stylesheet version="2.0"
 	xmlns:svo="http://www.symplectic.co.uk/vivo/" xmlns:api="http://www.symplectic.co.uk/publications/api"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"

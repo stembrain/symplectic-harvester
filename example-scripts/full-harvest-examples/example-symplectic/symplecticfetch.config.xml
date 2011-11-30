@@ -1,13 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright (c) 2010-2011 VIVO Harvester Team. For full list of contributors, please see the AUTHORS file provided.
-  All rights reserved.
-  This program and the accompanying materials are made available under the terms of the new BSD license which accompanies this distribution, and is available at http://www.opensource.org/licenses/bsd-license.html
+  |  Copyright (c) 2011 Ian Boston for Symplectic, relicensed under the AGPL license in repository https://github.com/ieb/symplectic-harvester
+  |  Please see the LICENSE file for more details
 -->
+<!--  
+  |      url 
+  |          is the url of the Symplectic Elements API 
+  |          eg if listing users is at http://fashion.symplectic.org:2020/publications-cantab-api/objects?categories=user, 
+  |          then the Elements API Url is  http://fashion.symplectic.org:2020/publications-cantab-api
+  |          
+  |      limitListPages 
+  |          is the maximum number of pages in a list to retrieve.
+  |          
+  |      maxUrlGet
+  |          is the maximum number of URLs to GET in a single run
+  |          
+  |      updateList
+  |          if true, when lists are encountered they will be retrieved from the server even if they have been retrieved before, 
+  |          hence if new items are added to the list, those items will be re-fetched. Old items are not refetched.
+  |      
+  |      output
+  |          the configuration file for the output 
+ -->
 <Task>
-	<Param name="email">YOUEMAIL@EMAIL</Param>
-	<Param name="termSearch">YOURPUBMEDQUERY</Param>
-	<Param name="numRecords">ALL</Param>
-	<Param name="batchSize">1000</Param>
+	<Param name="limitListPages">20</Param>
+	<Param name="maxUrlGet">10000</Param>
 	<Param name="output">raw-records.config.xml</Param>
+	<Param name="updateList">false</Param>	
+	<Param name="url">http://fashion.symplectic.org:2020/publications-cantab-api</Param>
 </Task>

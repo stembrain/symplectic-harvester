@@ -3,28 +3,11 @@
 #Copyright (c) 2010-2011 VIVO Harvester Team. For full list of contributors, please see the AUTHORS file provided.
 #All rights reserved.
 #This program and the accompanying materials are made available under the terms of the new BSD license which accompanies this distribution, and is available at http://www.opensource.org/licenses/bsd-license.html
+#  
+#  Modifications Copyright (c) 2011 Ian Boston for Symplectic, relicensed under the AGPL license in repository https://github.com/ieb/symplectic-harvester
+#  Please see the LICENSE file for more details
 
-# set to the directory where the harvester was installed or unpacked
-# HARVESTER_INSTALL_DIR is set to the location of the installed harvester
-#	If the deb file was used to install the harvester then the
-#	directory should be set to /usr/share/vivo/harvester which is the
-#	current location associated with the deb installation.
-#	Since it is also possible the harvester was installed by
-#	uncompressing the tar.gz the setting is available to be changed
-#	and should agree with the installation location
-export HARVESTER_INSTALL_DIR=/Users/ieb/Caret/vivo/vivo-harvester-code
-export EXTENSION_INSTALL_DIR=/Users/ieb/Caret/vivo/symplectic
-export HARVEST_NAME=example-symplectic
-export DATE=`date +%Y-%m-%d'T'%T`
-
-# Add harvester binaries to path for execution
-# The tools within this script refer to binaries supplied within the harvester
-#	Since they can be located in another directory their path should be
-#	included within the classpath and the path environment variables.
-export PATH=$PATH:$HARVESTER_INSTALL_DIR/bin:$EXTENSION_INSTALL_DIR/bin
-export CLASSPATH=$CLASSPATH:$EXTENSION_INSTALL_DIR/build/symplectic-harvester.jar
-export CLASSPATH=$CLASSPATH:$HARVESTER_INSTALL_DIR/bin/harvester.jar:$HARVESTER_INSTALL_DIR/bin/dependency/*
-export CLASSPATH=$CLASSPATH:$HARVESTER_INSTALL_DIR/build/harvester.jar:$HARVESTER_INSTALL_DIR/build/dependency/*
+. symplectic-tools.config
 
 # Exit on first error
 # The -e flag prevents the script from continuing even though a tool fails.
@@ -61,7 +44,7 @@ cd ..
 # The symplecticFetch tool in particular takes the data from the chosen source described in its
 #	configuration XML file and places it into record set in the flat RDF directly 
 #	related to the rows, columns and tables described in the target database.
-harvester-symplecticfetch -X symplecticfetch.config.xml -w TRACE
+harvester-symplecticfetch -X symplecticfetch.config.xml
 rm -rf datasafe
 cp -r data datasafe
 cp loadstate datasafe

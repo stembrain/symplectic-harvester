@@ -41,11 +41,34 @@ import org.xml.sax.SAXException;
 
 public class SymplecticFetch {
 
+	/**
+	 * boolean arg, if true, lists will be re-fetched and anything that is new
+	 * will get fetched, default is false
+	 */
+	private static final String UPDATE_LIST_ARG = "updateList";
+	/**
+	 * Integer Argument name: The max number of pages that should be loaded from
+	 * a list, default is 20
+	 */
+	private static final String LIMIT_LIST_PAGES_ARG = "limitListPages";
+	/**
+	 * Integer Argument name: The maximum number of URLs to get in a single run,
+	 * default is 10000
+	 */
+	private static final String MAX_URL_GET_ARG = "maxUrlGet";
+	/**
+	 * String Argument name: The URL of the categories in the Elements server,
+	 * no default, required
+	 */
+	private static final String URL_ARG = "url";
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(SymplecticFetch.class);
 	private static String database = "symplectic";
 	private RecordHandler rh;
-
+	private String baseUrl;
+	private int maxUrlFetch;
+	private int limitListPages;
+	private boolean updateLists;
 
 	protected SymplecticFetch(RecordHandler rh, String database) {
 		if (rh == null) {
@@ -67,6 +90,15 @@ public class SymplecticFetch {
 	protected SymplecticFetch(ArgList argList) throws IOException {
 		this(RecordHandler.parseConfig(argList.get("o"),
 				argList.getValueMap("O")), database);
+		baseUrl = argList.get(URL_ARG);
+		maxUrlFetch = Integer.parseInt(argList.get(MAX_URL_GET_ARG));
+		limitListPages = Integer.parseInt(argList.get(LIMIT_LIST_PAGES_ARG));
+		updateLists = Boolean.parseBoolean(argList.get(UPDATE_LIST_ARG));
+		LOGGER.info("Config: Elements API at {} ",baseUrl);
+		LOGGER.info("Config: Max Number of URLs to fetch {} ",maxUrlFetch);
+		LOGGER.info("Config: Max Number of Pages to list {} ",limitListPages);
+		LOGGER.info("Config: Refetch lists {} ",updateLists);
+		LOGGER.info("To change any of these edit {} ",argList.get("X"));
 	}
 
 	public static void main(String[] args) {
@@ -75,7 +107,7 @@ public class SymplecticFetch {
 			LOGGER.info("SymplecticFetch: Start");
 			SymplecticFetch sf = new SymplecticFetch(getParser(
 					"SymplecticFetch", database).parse(args));
-			sf.execute("http://fashion.symplectic.org:2020/publications-cantab-api/objects?categories=");
+			sf.execute();
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage());
 			LOGGER.debug("Stacktrace:", e);
@@ -86,10 +118,10 @@ public class SymplecticFetch {
 		LOGGER.info("SymplecticFetch: End");
 	}
 
-
 	/**
 	 * Executes the task
-	 * @param baseUrl 
+	 * 
+	 * @param baseUrl
 	 * 
 	 * @throws UnsupportedEncodingException
 	 * 
@@ -101,53 +133,55 @@ public class SymplecticFetch {
 	 * @throws SAXException
 	 * @throws DOMException
 	 * @throws NoSuchAlgorithmException
-	 * @throws AtomEntryLoadException 
+	 * @throws AtomEntryLoadException
 	 */
 
-	private void execute(String baseUrl) throws DOMException, NoSuchAlgorithmException,
+	private void execute() throws DOMException, NoSuchAlgorithmException,
 			UnsupportedEncodingException, IOException, SAXException,
 			ParserConfigurationException, TransformerFactoryConfigurationError,
 			TransformerException {
-		ProgressTracker progress = new ProgressTracker("loadstate",rh);
-		// re-scan relationships to extract API objects reScanRelationships(progress);
-		progress.toload(baseUrl+"user", new APIObjects(rh, "users", progress));
-//		progress.toload(baseUrl+"publication", new APIObjects(rh, "publications", progress));
+		ProgressTracker progress = new ProgressTracker("loadstate", rh,
+				limitListPages, updateLists);
+		// re-scan relationships to extract API objects
+		// reScanRelationships(progress);
+		progress.toload(baseUrl + "/objects?categories=user", new APIObjects(rh, "users", progress,
+				limitListPages));
+		// progress.toload(baseUrl+"publication", new APIObjects(rh,
+		// "publications", progress));
 		int i = 0;
-		while(progress.hasPending() && i < 10000 ) {
-			LOGGER.info("ToDo list contains {} urls ",progress.pending());
+		while (progress.hasPending() && i < maxUrlFetch) {
+			LOGGER.info("ToDo list contains {} urls ", progress.pending());
 			Entry<String, AtomEntryLoader> next = progress.next();
 			AtomEntryLoader loader = next.getValue();
-			LOGGER.info("Loading Object {} ",next.getKey());
-			
+			LOGGER.info("Loading Object {} ", next.getKey());
+
 			try {
 				loader.loadEntry(next.getKey());
 			} catch (AtomEntryLoadException e) {
-				LOGGER.error(e.getMessage(),e);
+				LOGGER.error(e.getMessage(), e);
 			}
 			i++;
 		}
-		LOGGER.info("End ToDo list contains {} urls ",progress.pending());
+		LOGGER.info("End ToDo list contains {} urls ", progress.pending());
 		progress.dumpLoaded();
 		progress.checkpoint();
-		
+
 	}
-
-
-
 
 	@SuppressWarnings("unused")
 	private void reScanRelationships(ProgressTracker tracker) {
 		File publicationsXml = new File("data/raw-records");
-		APIObject userObject = new APIObject(rh,"user", tracker);
-		APIObject publicationObject = new APIObject(rh,"publication", tracker);
-		for ( File f : publicationsXml.listFiles() ) {
-			if ( f.getName().startsWith("relationship")) {
+		APIObject userObject = new APIObject(rh, "user", tracker);
+		APIObject publicationObject = new APIObject(rh, "publication", tracker);
+		for (File f : publicationsXml.listFiles()) {
+			if (f.getName().startsWith("relationship")) {
 				try {
-					Document doc = XmlAide.loadXmlDocument(f.toURI().toURL().toString());
+					Document doc = XmlAide.loadXmlDocument(f.toURI().toURL()
+							.toString());
 					userObject.loadEntrys(doc);
 					publicationObject.loadEntrys(doc);
 				} catch (Exception e) {
-					LOGGER.error(e.getMessage(),e);
+					LOGGER.error(e.getMessage(), e);
 				}
 			}
 		}
@@ -175,6 +209,30 @@ public class SymplecticFetch {
 				.setDescription(
 						"override the RH_PARAM of output recordhandler using VALUE")
 				.setRequired(false));
+		parser.addArgument(new ArgDef().setLongOpt(URL_ARG).setRequired(true)
+				.withParameter(true, "url")
+				.setDescription("URL of the Symplectic Elements API"));
+		parser.addArgument(new ArgDef()
+				.setLongOpt(UPDATE_LIST_ARG)
+				.setRequired(false)
+				.setDefaultValue("false")
+				.withParameter(true, "num")
+				.setDescription(
+						"If true, Atom Feeds that return lists will be rescanned for changes"));
+		parser.addArgument(new ArgDef()
+				.setLongOpt(LIMIT_LIST_PAGES_ARG)
+				.setRequired(false)
+				.setDefaultValue("20")
+				.withParameter(true, "num")
+				.setDescription(
+						"The maximum number of pages in a list that will be retrieved"));
+		parser.addArgument(new ArgDef()
+				.setLongOpt(MAX_URL_GET_ARG)
+				.setRequired(false)
+				.setDefaultValue("1000")
+				.withParameter(true, "num")
+				.setDescription(
+						"The maximum number of urls that will be retrieved in a run"));
 		return parser;
 	}
 

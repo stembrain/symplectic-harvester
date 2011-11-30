@@ -1,3 +1,7 @@
+/*
+ *  Copyright (c) 2011 Ian Boston for Symplectic, relicensed under the AGPL license in repository https://github.com/ieb/symplectic-harvester
+ *  Please see the LICENSE file for more details
+ */
 package uk.co.tfd.symplectic.harvester;
 
 import java.io.DataInputStream;
@@ -33,8 +37,10 @@ public class ProgressTracker {
 	private File failedChkFile;
 	private File failedFileSafe;
 	private File failedFile;
+	private int limitListPages;
+	private boolean updateLists;
 
-	public ProgressTracker(String fileName, RecordHandler recordHandler) {
+	public ProgressTracker(String fileName, RecordHandler recordHandler, int limitListPages, boolean updateLists) {
 		chkFile = new File(fileName + ".chk");
 		loadstateFile = new File(fileName);
 		loadstateFileSafe = new File(fileName + ".safe");
@@ -42,6 +48,8 @@ public class ProgressTracker {
 		failedFile = new File(fileName+"-failed");
 		failedFileSafe = new File(fileName + "-failed.safe");
 		this.recordHandler = recordHandler;
+		this.limitListPages = limitListPages;
+		this.updateLists = updateLists;
 		try {
 			load();
 		} catch (IOException e1) {
@@ -129,9 +137,9 @@ public class ProgressTracker {
 				if ("relationship".equals(type)) {
 					toLoad.put(url, new APIRelationship(recordHandler, this));
 				} else if ("relationships".equals(type)) {
-					toLoad.put(url, new APIRelationships(recordHandler, this));
+					toLoad.put(url, new APIRelationships(recordHandler, this, limitListPages));
 				} else if (type.endsWith("s")) {
-					toLoad.put(url, new APIObjects(recordHandler, type, this));
+					toLoad.put(url, new APIObjects(recordHandler, type, this, limitListPages));
 				} else {
 					toLoad.put(url, new APIObject(recordHandler, type, this));
 				}
@@ -165,7 +173,7 @@ public class ProgressTracker {
 	}
 
 	public void toload(String url, AtomEntryLoader loader) {
-		if (!loaded.contains(url) && !toLoad.containsKey(url) && !failed.contains(url)) {
+		if ((updateLists && loader instanceof AtomEntryListLoader) || ( !loaded.contains(url) && !toLoad.containsKey(url) && !failed.contains(url))) {
 			synchronized (toLoadList) {
 				LOGGER.info("added {} ", url);
 				toLoad.put(url, loader);

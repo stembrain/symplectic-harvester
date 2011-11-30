@@ -1,3 +1,7 @@
+/*
+ *  Copyright (c) 2011 Ian Boston for Symplectic, relicensed under the AGPL license in repository https://github.com/ieb/symplectic-harvester
+ *  Please see the LICENSE file for more details
+ */
 package uk.co.tfd.symplectic.harvester;
 
 import org.vivoweb.harvester.util.repo.RecordHandler;
@@ -8,12 +12,14 @@ public class APIRelationships implements AtomEntryLoader, AtomEntryListLoader {
 	private RecordHandler rh;
 	private String type;
 	private ProgressTracker tracker;
+	private int limitListPages;
 
 	public APIRelationships(RecordHandler rh,
-			ProgressTracker tracker) {
+			ProgressTracker tracker, int limitListPages) {
 		this.rh = rh;
 		this.type = "relationships";
 		this.tracker = tracker;
+		this.limitListPages = limitListPages;
 	}
 	
 	public String getType() {
@@ -26,7 +32,7 @@ public class APIRelationships implements AtomEntryLoader, AtomEntryListLoader {
 	@Override
 	public void loadEntry(String url) throws AtomEntryLoadException {
 		try {
-			PageConverter pageConverter = new PageConverter(this);
+			PageConverter pageConverter = new PageConverter(this, limitListPages);
 			pageConverter.addAll(url);
 			tracker.loaded(url);
 		} catch (Exception e) {

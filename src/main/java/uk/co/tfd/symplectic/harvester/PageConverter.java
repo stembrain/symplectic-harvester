@@ -1,3 +1,7 @@
+/*
+ *  Copyright (c) 2011 Ian Boston for Symplectic, relicensed under the AGPL license in repository https://github.com/ieb/symplectic-harvester
+ *  Please see the LICENSE file for more details
+ */
 package uk.co.tfd.symplectic.harvester;
 
 import org.slf4j.Logger;
@@ -13,9 +17,11 @@ public class PageConverter {
 			.getLogger(PageConverter.class);
 
 	private AtomEntryListLoader loader;
+	private int limitListPages;
 
-	public PageConverter(AtomEntryListLoader loader) {
+	public PageConverter(AtomEntryListLoader loader, int limitListPages) {
 		this.loader = loader;
+		this.limitListPages = limitListPages;
 	}
 
 	public void addAll(String firstPageUrl) throws AtomEntryLoadException {
@@ -33,7 +39,7 @@ public class PageConverter {
 		}
 
 		// for the moment, limit to 20 pages.
-		npages = Math.min(npages, 20);
+		npages = Math.min(npages, limitListPages);
 
 		LOGGER.info("Fetching {} records from search {} ", nrecords, firstPageUrl);
 		for (int page = 1; page <= npages; page++) {

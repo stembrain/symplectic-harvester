@@ -48,5 +48,5 @@ harvester-symplecticfetch -X symplecticfetch.config.xml
 rm -rf datasafe
 cp -r data datasafe
 cp loadstate datasafe
-cp loadstate-fail datasafe
+cp loadstate-failed datasafe
 echo 'Harvest completed successfully'

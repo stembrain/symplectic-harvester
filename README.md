@@ -22,11 +22,17 @@ Build and deploy Vivo Harvester remembering to deploy dependencies.
 
 Build this package
 
+      git clone git@github.com:ieb/symplectic-harvester.git
+      cd symplectic-harvester
       mvn clean install
 
 look in examples-scripts/full-harvest-examples/example-symplectic
 
      cd examples-scripts/full-harvest-examples/example-symplectic
+     
+Configure the locations of the harvester installation and the other OS level things.
+
+     vi symplectic-tools.config    
 
 Configure the connection to you Vivo instance
     
@@ -34,11 +40,28 @@ Configure the connection to you Vivo instance
 
 This is a direct connection the Vivo database. The harvester will read from there and write to there with additions. The Database should exist and have been populated by starting the Vivo application, however the Vivo application (Tomcat + Vivo war) doesn't need to be running to perform a harvest.
 
+Test that the vivo model is correctly configured.
+
+     sh jenna-connect.sh vivo.model.xml  " select ?s ?v where { ?s <http://vitro.mannlib.cornell.edu/ns/vitro/0.7#updatedOntology> ?v } "
+     
+This should produce 1 result. 
+
 Configure the connection to you Elements Instance
     
     vi symplecticfetch.config.xml
 
 see the documentation in that file for information.
+
+
+Modify symplectic-to-vivo.datamap.xsl to set the baseUrl to whatever is configured for you Vivo instance. If my instance was called vivo.symplectic.co.uk I would need to change
+
+     <xsl:variable name="baseURI">http://vivo.tfd.co.uk/individual/</xsl:variable>
+     
+to
+
+     <xsl:variable name="baseURI">http://vivo.symplectic.co.uk/individual/</xsl:variable>
+     
+     
 
 ## Scripts
 

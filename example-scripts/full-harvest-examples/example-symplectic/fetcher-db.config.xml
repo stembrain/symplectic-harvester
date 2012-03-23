@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<db-config db-type="mysql" max-url-age="864000">
+	<mysql>
+		<jdbc-class>com.mysql.jdbc.Driver</jdbc-class>
+		<jdbc-url>jdbc:mysql://127.0.0.1:3306/vivo?useUnicode=true&amp;characterEncoding=UTF-8</jdbc-url>
+		<jdbc-user>vivo</jdbc-user>
+		<jdbc-password>vivopw</jdbc-password>
+		<check-db-sql>select count(*) from symplectic_fetch</check-db-sql>
+		<update-url-state-sql>update symplectic_fetch set url = ?, lastupdate
+			= ?, loadstate = ? where id = ? </update-url-state-sql>
+		<insert-url-state-sql>insert into symplectic_fetch (url, lastupdate,
+			loadstate, id) values ( ?,?,?,?)</insert-url-state-sql>
+		<count-status-sql>select count(*) from symplectic_fetch where
+			loadstate = ?</count-status-sql>
+		<select-on-status-sql>select url, lastupdate, loadstate, loader_type,
+			id from symplectic_fetch where loadstate = ? order by lastupdate asc
+		</select-on-status-sql>
+		<select-on-status-sql>select url, lastupdate, loadstate, loader_type,
+			id from symplectic_fetch where loadstate = ? lastupdate order by
+			lastupdate asc</select-on-status-sql>
+		<insert-url-state-toload-sql>update symplectic_fetch set url = ?,
+			lastupdate = ?, loadstate = ?, loader_type = ? where id = ?
+		</insert-url-state-toload-sql>
+		<update-url-state-toload-sql>insert into symplectic_fetch (url,
+			lastupdate, loadstate, loader_type, id) values ( ?,?,?,?,?)
+		</update-url-state-toload-sql>
+		<select-url>select url, lastupdate, loadstate, loader_type, id from
+			symplectic_fetch where id = ?</select-url>
+		<createdb>
+			<ddl>
+			CREATE TABLE  `symplectic_fetch` (
+                 `id` varchar(32) NOT NULL,
+                 `url` varchar(780) NOT NULL,
+                 `lastupdate` varchar(64) NOT NULL,
+                 `loadstate` INTEGER NOT NULL,
+                  `loader_type` varchar(32) NOT NULL,
+                  PRIMARY KEY  (`id`),
+                  KEY `k_lastupdate`  (`lastupdate`),
+                  KEY `k_loadstate` (`loadstate`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+			</ddl>
+		</createdb>
+	</mysql>
+	<derby>
+		<jdbc-class>org.apache.derby.jdbc.EmbeddedDriver</jdbc-class>
+		<jdbc-url>jdbc:derby:data/symplecticfetchdb;create=true</jdbc-url>
+		<jdbc-user>sa</jdbc-user>
+		<jdbc-password></jdbc-password>
+		<check-db-sql>select count(*) from symplectic_fetch</check-db-sql>
+		<update-url-state-sql>update symplectic_fetch set url = ?, lastupdate
+			= ?, loadstate = ? where id = ? </update-url-state-sql>
+		<insert-url-state-sql>insert into symplectic_fetch (url, lastupdate,
+			loadstate, id) values ( ?,?,?,?)</insert-url-state-sql>
+		<count-status-sql>select count(*) from symplectic_fetch where
+			loadstate = ?</count-status-sql>
+		<select-on-status-sql>select url, lastupdate, loadstate, loader_type,
+			id from symplectic_fetch where loadstate = ? order by lastupdate asc
+		</select-on-status-sql>
+		<select-on-status-sql>select url, lastupdate, loadstate, loader_type,
+			id from symplectic_fetch where loadstate = ? lastupdate order by
+			lastupdate asc</select-on-status-sql>
+		<insert-url-state-toload-sql>update symplectic_fetch set url = ?,
+			lastupdate = ?, loadstate = ?, loader_type = ? where id = ?
+		</insert-url-state-toload-sql>
+		<update-url-state-toload-sql>insert into symplectic_fetch (url,
+			lastupdate, loadstate, loader_type, id) values ( ?,?,?,?,?)
+		</update-url-state-toload-sql>
+		<select-url>select url, lastupdate, loadstate, loader_type, id from
+			symplectic_fetch where id = ?</select-url>
+		<createdb>
+			<ddl>create table symplectic_fetch (
+				id varchar(32) non null,
+				url varcahr(780) not null,
+				lastupdate timestamp not null,
+				loadstate integer not null,
+				loader_type varchar(20) not null,
+				primary key(id))</ddl>
+			<ddl>create index symplectic_fetch_lu ON symplectic_fetch
+				(lastupdate)</ddl>
+			<ddl>create index symplectic_fetch_ls ON symplectic_fetch (loadstate)
+			</ddl>
+		</createdb>
+	</derby>
+</db-config>
+

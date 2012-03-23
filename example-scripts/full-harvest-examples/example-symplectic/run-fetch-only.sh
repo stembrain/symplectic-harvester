@@ -45,6 +45,7 @@ cd ..
 #	configuration XML file and places it into record set in the flat RDF directly 
 #	related to the rows, columns and tables described in the target database.
 harvester-symplecticfetch -X symplecticfetch.config.xml
+exit
 rm -rf datasafe
 cp -r data datasafe
 cp loadstate datasafe

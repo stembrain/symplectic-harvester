@@ -22,6 +22,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vivoweb.harvester.util.WebAide;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -30,6 +32,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class XmlAide {
+	private static final Logger LOGGER = LoggerFactory.getLogger(XmlAide.class);
+
 	public static Document loadXmlDocument(String url)
 			throws MalformedURLException, SAXException, IOException,
 			ParserConfigurationException {
@@ -98,4 +102,13 @@ public class XmlAide {
 		return s;
 	}
 
+	public static String getNodeValue(Node n, String elementName) {
+		Node element = findNode(n, elementName);
+		LOGGER.info("Find Node base:{} elementName:{} found:{} ",new Object[]{n, elementName, element});
+		if (element != null) {
+			LOGGER.info("Value {} ", element.getTextContent());
+			return element.getTextContent();
+		}
+		return null;
+	}
 }

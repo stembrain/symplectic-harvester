@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Map.Entry;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -109,7 +110,7 @@ public class SymplecticFetch {
 					"SymplecticFetch", database).parse(args));
 			sf.execute();
 		} catch (Exception e) {
-			LOGGER.error(e.getMessage());
+			LOGGER.error(e.getMessage(), e);
 			LOGGER.debug("Stacktrace:", e);
 			System.out.println(getParser("SymplecticFetch", database)
 					.getUsage());
@@ -140,8 +141,19 @@ public class SymplecticFetch {
 			UnsupportedEncodingException, IOException, SAXException,
 			ParserConfigurationException, TransformerFactoryConfigurationError,
 			TransformerException {
-		ProgressTracker progress = new ProgressTracker("loadstate", rh,
-				limitListPages, updateLists);
+		ProgressTracker progress = null;
+		try {
+			progress = new JDBCProgressTrackerImpl(rh, limitListPages, updateLists);
+		} catch (SQLException e) {
+			LOGGER.info(e.getMessage(),e);
+			progress = new FileProgressTrackerImpl("loadstate", rh,
+					limitListPages, updateLists);
+		} catch (IOException e ) {
+			LOGGER.info(e.getMessage(),e);
+			progress = new FileProgressTrackerImpl("loadstate", rh,
+					limitListPages, updateLists);			
+		}
+		
 		// re-scan relationships to extract API objects
 		// reScanRelationships(progress);
 		progress.toload(baseUrl + "/objects?categories=user", new APIObjects(rh, "users", progress,

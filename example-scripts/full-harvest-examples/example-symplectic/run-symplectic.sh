@@ -93,7 +93,7 @@ harvester-transfer -o vivo.model.xml -r data/vivo-subtractions.rdf.xml -m
 harvester-transfer -o vivo.model.xml -r data/vivo-additions.rdf.xml
 
 #Output some counts
-PUBS=`cat data/vivo-additions.rdf.xml | grep 'http://www.symplectic.co.uk/vivo/#Publication' | wc -l`
+PUBS=`cat data/vivo-additions.rdf.xml | grep 'http://vivoweb.org/ontology/core#InformationResource' | wc -l`
 AUTHORS=`cat data/vivo-additions.rdf.xml | grep 'http://xmlns.com/foaf/0.1/Person' | wc -l`
 AUTHORSHIPS=`cat data/vivo-additions.rdf.xml | grep Authorship | wc -l`
 echo "Imported $PUBS publications, $AUTHORS authors, and $AUTHORSHIPS authorships"

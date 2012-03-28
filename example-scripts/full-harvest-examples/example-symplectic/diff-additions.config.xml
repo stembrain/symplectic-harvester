@@ -12,5 +12,6 @@
 	<Param name="subtrahend">previous-harvest.model.xml</Param>
 	
 	<!--  OPTIONS -->
-	<Param name="dumptofile">data/vivo-additions.rdf.xml</Param>
+	<Param name="dumptofile">xmlrdf=data/vivo-additions.rdf.xml</Param>
+    <Param name="dumptolanguage">xmlrdf=RDF/XML</Param>
 </Task>

@@ -83,8 +83,8 @@
                         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
                         <rdf:type rdf:resource="http://vivoweb.org/ontology/core#InformationResource"/>
                         <rdf:type rdf:resource="http://purl.org/ontology/bibo/Document"/>
-                        <rdf:type rdf:resource="http://purl.org/ontology/bibo/Book"/>
-                        <rdf:type rdf:resource="http://purl.org/ontology/bibo/Proceedings"/>
+                        <rdf:type rdf:resource="http://purl.org/ontology/bibo/Article"/>
+                        <rdf:type rdf:resource="http://vivoweb.org/ontology/core#ConferencePaper"/>
                     </xsl:when>
                     <xsl:when test="@type-id=5"> <!--  Academic Article -->
                         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
@@ -112,6 +112,7 @@
                     </xsl:when>
                     <xsl:when test="@type-id=9"> <!-- Event/Performance  -->
                         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+                        <rdf:type rdf:resource="http://purl.org/ontology/bibo/Event"/>
                         <rdf:type rdf:resource="http://purl.org/ontology/bibo/Performance"/>
                     </xsl:when>
                     <xsl:when test="@type-id=10"> <!-- Composition  -->
@@ -122,6 +123,8 @@
                     </xsl:when>
                     <xsl:when test="@type-id=13"> <!-- Exhibition  -->
                         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+                        <rdf:type rdf:resource="http://vivoweb.org/ontology/core#InformationResource"/>
+                        <rdf:type rdf:resource="http://purl.org/ontology/bibo/Event"/>
                         <rdf:type rdf:resource="http://vivoweb.org/ontology/core#Exhibit"/>
                     </xsl:when>
                     <xsl:when test="@type-id=15"> <!-- Internet Publication  -->
@@ -162,14 +165,14 @@
     					<rdf:type rdf:resource="http://purl.org/ontology/bibo/Article"/>
 					</xsl:otherwise>
 				</xsl:choose>	    	
-				<xsl:apply-templates select="api:records/api:record[1]" mode="dateTimeReferences" /> 
+				<xsl:apply-templates select="api:records/api:record[1]" mode="objectReferences" /> 
 				
 				<ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
 				<xsl:apply-templates select="api:records/api:record[1]" />
 		    </rdf:Description>
 		    
 		    <!--  publication date -->
-		    <xsl:apply-templates select="api:records/api:record[1]" mode="dateTimeEntries" /> 
+		    <xsl:apply-templates select="api:records/api:record[1]" mode="objectEntries" /> 
             
 		</rdf:RDF>
 	</xsl:template>
@@ -235,8 +238,8 @@
 
 	<xsl:template match="text()"></xsl:template>
 	<xsl:template match="text()" mode="dateTimeValue"></xsl:template>
-    <xsl:template match="text()" mode="dateTimeReferences"></xsl:template>
-    <xsl:template match="text()" mode="dateTimeEntries"></xsl:template>
+    <xsl:template match="text()" mode="objectReferences"></xsl:template>
+    <xsl:template match="text()" mode="objectEntries"></xsl:template>
 
     <!--  user metadata  -->
 	<xsl:template match="api:organisation-defined-data[@field-name='UoA']">
@@ -273,11 +276,6 @@
 			<xsl:value-of select="api:text" />
 		</bibo:abstract>
 	</xsl:template>
-	<xsl:template match="api:field[@name='author-url']">
-		<svo:author-url>
-			<xsl:value-of select="api:text" />
-		</svo:author-url>
-	</xsl:template>
 	<xsl:template match="api:field[@name='series']">
 		<bibo:number>
 			<xsl:value-of select="api:text" />
@@ -298,13 +296,14 @@
 	<xsl:template match="api:field[@name='pagination']">
 		<xsl:choose>
 		   <xsl:when test="string(api:begin-page) and string(api:end-page)">
-			<svo:pagnation begin-page="{api:begin-page}" end-page="{api:end-page}" />
+		    <bibo:pageStart><xsl:value-of select="api:begin-page" /></bibo:pageStart>
+		    <bibo:pageEnd><xsl:value-of select="api:end-page" /></bibo:pageEnd>
 		   </xsl:when>
 		   <xsl:when test="string(api:begin-page)">
-			<svo:pagnation begin-page="{api:begin-page}" />
+            <bibo:pageStart><xsl:value-of select="api:begin-page" /></bibo:pageStart>
 		   </xsl:when>
 		   <xsl:when test="string(api:end-page)">
-			<svo:pagnation end-page="{api:end-page}" />
+            <bibo:pageEnd><xsl:value-of select="api:end-page" /></bibo:pageEnd>
 		   </xsl:when>
 		</xsl:choose>
 	</xsl:template>
@@ -321,14 +320,10 @@
 	</xsl:template>
 	 -->
 	<xsl:template match="api:field[@name='publisher']">
+	<!--  TODO: convert this to vivo:publisher link t foaf:Organization -->
 		<svo:publisher>
 			<xsl:value-of select="api:text" />
 		</svo:publisher>
-	</xsl:template>
-	<xsl:template match="api:field[@name='publisher-url']">
-		<svo:publisher-url>
-			<xsl:value-of select="api:text" />
-		</svo:publisher-url>
 	</xsl:template>
 	<xsl:template match="api:field[@name='place-of-publication']">
 		<bibo:placeOfPublication>
@@ -385,6 +380,8 @@
 			</core:dateTime>
 		</xsl:if>		
 	</xsl:template>
+	
+	
 	
 	<xsl:template match="api:field[@name='isbn-10']">
 		<bibo:isbn-10>
@@ -577,11 +574,13 @@
         </svo:published-proceedings>
     </xsl:template>
     <xsl:template match="api:field[@name='refereed']">
+<!--  TODO:                <bibo:status rdf:resource="http://purl.org/ontology/bibo/peerReviewed"/> -->
         <svo:refereed>
             <xsl:value-of select="api:text" />
         </svo:refereed>
     </xsl:template>
     <xsl:template match="api:field[@name='references']">
+<!--  TODO: bibo:cites ?, may be a reference rather than a property -->
         <svo:references>
             <xsl:value-of select="api:text" />
         </svo:references>
@@ -601,11 +600,6 @@
             <xsl:value-of select="api:text" />
         </svo:running-time>
     </xsl:template>
-    <xsl:template match="api:field[@name='series']">
-        <svo:series>
-            <xsl:value-of select="api:text" />
-        </svo:series>
-    </xsl:template>
     <xsl:template match="api:field[@name='series-directors']">
         <svo:series-directors>
             <xsl:value-of select="api:text" />
@@ -622,6 +616,38 @@
         </svo:series-name>
     </xsl:template>
     <xsl:template match="api:field[@name='status']">
+        <xsl:choose>
+            <xsl:when test="api:text='accepted'">
+                <bibo:status rdf:resource="http://purl.org/ontology/bibo/accepted"/>
+            </xsl:when>
+            <xsl:when test="api:text='draft'">
+                <bibo:status rdf:resource="http://purl.org/ontology/bibo/draft"/>
+            </xsl:when>
+            <xsl:when test="api:text='in press'">
+                <bibo:status rdf:resource="http://vivoweb.org/ontology/core#inPress"/>
+            </xsl:when>
+            <xsl:when test="api:text='invited'">
+                <bibo:status rdf:resource="http://vivoweb.org/ontology/core#invited"/>
+            </xsl:when>
+            <xsl:when test="api:text='peer reviewed'">
+                <bibo:status rdf:resource="http://purl.org/ontology/bibo/peerReviewed"/>
+            </xsl:when>
+            <xsl:when test="api:text='published'">
+                <bibo:status rdf:resource="http://purl.org/ontology/bibo/published"/>
+            </xsl:when>
+            <xsl:when test="api:text='rejected'">
+                <bibo:status rdf:resource="http://purl.org/ontology/bibo/rejected"/>
+            </xsl:when>
+            <xsl:when test="api:text='submitted'">
+                <bibo:status rdf:resource="http://vivoweb.org/ontology/core#submitted"/>
+            </xsl:when>
+            <xsl:when test="api:text='unpublished'">
+                <bibo:status rdf:resource="http://purl.org/ontology/bibo/unpublished"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <bibo:status rdf:resource="http://www.symplectic.co.uk/vivo/status/{api:text}"/>
+            </xsl:otherwise>
+        </xsl:choose>
         <svo:status>
             <xsl:value-of select="api:text" />
         </svo:status>
@@ -693,149 +719,226 @@
 	</xsl:template>
 	
 	
-    <xsl:template match="api:field[@name='publication-date']" mode="dateTimeReferences" >
-        <core:dateTimeValue rdf:resource="{$baseURI}publication{ancestor::api:object@id}-publicationDate"/>
+    <xsl:template match="api:field[@name='publication-date']" mode="objectReferences" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+        <core:dateTimeValue rdf:resource="{$baseURI}publication{$rid}-publicationDate"/>
     </xsl:template>
 
 
-    <xsl:template match="api:field[@name='publication-date']" mode="dateTimeEntries" >
-       <rdf:Description  rdf:about="{$baseURI}publication{ancestor::api:object@id}-publicationDate">
+    <xsl:template match="api:field[@name='publication-date']" mode="objectEntries" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+       <rdf:Description  rdf:about="{$baseURI}publication{$rid}-publicationDate">
          <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
          <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
+         <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/publication-date"/>
          <xsl:apply-templates select="."  mode="dateTimeValue" />
        </rdf:Description>
     </xsl:template>
     
-    <xsl:template match="api:field[@name='start-date']" mode="dateTimeReferences" >
-        <svo:start-date rdf:resource="{$baseURI}publication{ancestor::api:object@id}-startDate"/>
+    <xsl:template match="api:field[@name='start-date']" mode="objectReferences" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+        <core:dateTimeValue rdf:resource="{$baseURI}publication{$rid}-startDate"/>
     </xsl:template>
     
-   <xsl:template match="api:field[@name='start-date']" mode="dateTimeEntries" >
-       <rdf:Description  rdf:about="{$baseURI}publication{ancestor::api:object@id}-startDate">
+   <xsl:template match="api:field[@name='start-date']" mode="objectEntries" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+       <rdf:Description  rdf:about="{$baseURI}publication{$rid}-startDate">
          <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
          <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
-         <xsl:apply-templates select="."  mode="dateTimeValue" />
-       </rdf:Description>
-    </xsl:template>
-
-    <xsl:template match="api:field[@name='presented-date']" mode="dateTimeReferences" >
-        <svo:start-date rdf:resource="{$baseURI}publication{ancestor::api:object@id}-presentedDate"/>
-    </xsl:template>
-    
-   <xsl:template match="api:field[@name='presented-date']" mode="dateTimeEntries" >
-       <rdf:Description  rdf:about="{$baseURI}publication{ancestor::api:object@id}-presentedDate">
-         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-         <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
+         <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/start-date"/>
          <xsl:apply-templates select="."  mode="dateTimeValue" />
        </rdf:Description>
     </xsl:template>
 
-    <xsl:template match="api:field[@name='filed-date']" mode="dateTimeReferences" >
-        <svo:filed-date rdf:resource="{$baseURI}publication{ancestor::api:object@id}-filedDate"/>
+    <xsl:template match="api:field[@name='presented-date']" mode="objectReferences" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+        <core:dateTimeValue rdf:resource="{$baseURI}publication{$rid}-presentedDate"/>
     </xsl:template>
     
-   <xsl:template match="api:field[@name='filed-date']" mode="dateTimeEntries" >
-       <rdf:Description  rdf:about="{$baseURI}publication{ancestor::api:object@id}-filedDate">
+   <xsl:template match="api:field[@name='presented-date']" mode="objectEntries" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+       <rdf:Description  rdf:about="{$baseURI}publication{$rid}-presentedDate">
          <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
          <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
+         <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/presented-date"/>
          <xsl:apply-templates select="."  mode="dateTimeValue" />
        </rdf:Description>
     </xsl:template>
 
-    <xsl:template match="api:field[@name='expiry-date']" mode="dateTimeReferences" >
-        <svo:expiry-date rdf:resource="{$baseURI}publication{ancestor::api:object@id}-expiryDate"/>
+    <xsl:template match="api:field[@name='filed-date']" mode="objectReferences" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+        <core:dateTimeValue rdf:resource="{$baseURI}publication{$rid}-filedDate"/>
     </xsl:template>
     
-   <xsl:template match="api:field[@name='expiry-date']" mode="dateTimeEntries" >
-       <rdf:Description  rdf:about="{$baseURI}publication{ancestor::api:object@id}-expiryDate">
+   <xsl:template match="api:field[@name='filed-date']" mode="objectEntries" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+       <rdf:Description  rdf:about="{$baseURI}publication{$rid}-filedDate">
          <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
          <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
-         <xsl:apply-templates select="."  mode="dateTimeValue" />
-       </rdf:Description>
-    </xsl:template>
-    
-    <xsl:template match="api:field[@name='end-date']" mode="dateTimeReferences" >
-        <svo:end-date rdf:resource="{$baseURI}publication{ancestor::api:object@id}-endDate"/>
-    </xsl:template>
-    
-   <xsl:template match="api:field[@name='end-date']" mode="dateTimeEntries" >
-       <rdf:Description  rdf:about="{$baseURI}publication{ancestor::api:object@id}-endDate">
-         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-         <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
+         <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/filed-date"/>
          <xsl:apply-templates select="."  mode="dateTimeValue" />
        </rdf:Description>
     </xsl:template>
 
-    <xsl:template match="api:field[@name='date']" mode="dateTimeReferences" >
-        <svo:date rdf:resource="{$baseURI}publication{ancestor::api:object@id}-date"/>
+    <xsl:template match="api:field[@name='expiry-date']" mode="objectReferences" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+        <core:dateTimeValue rdf:resource="{$baseURI}publication{$rid}-expiryDate"/>
     </xsl:template>
     
-   <xsl:template match="api:field[@name='date']" mode="dateTimeEntries" >
-       <rdf:Description  rdf:about="{$baseURI}publication{ancestor::api:object@id}-date">
+   <xsl:template match="api:field[@name='expiry-date']" mode="objectEntries" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+       <rdf:Description  rdf:about="{$baseURI}publication{$rid}-expiryDate">
          <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
          <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
+         <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/expiry-date"/>
+         <xsl:apply-templates select="."  mode="dateTimeValue" />
+       </rdf:Description>
+    </xsl:template>
+    
+    <xsl:template match="api:field[@name='end-date']" mode="objectReferences" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+        <core:dateTimeValue rdf:resource="{$baseURI}publication{$rid}-endDate"/>
+    </xsl:template>
+    
+   <xsl:template match="api:field[@name='end-date']" mode="objectEntries" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+       <rdf:Description  rdf:about="{$baseURI}publication{$rid}-endDate">
+         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+         <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
+         <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/end-date"/>
          <xsl:apply-templates select="."  mode="dateTimeValue" />
        </rdf:Description>
     </xsl:template>
 
-    <xsl:template match="api:field[@name='date-submitted']" mode="dateTimeReferences" >
-        <svo:date-submitted rdf:resource="{$baseURI}publication{ancestor::api:object@id}-dateSubmitted"/>
+    <xsl:template match="api:field[@name='date']" mode="objectReferences" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+        <core:dateTimeValue rdf:resource="{$baseURI}publication{$rid}-date"/>
     </xsl:template>
     
-   <xsl:template match="api:field[@name='date-submitted']" mode="dateTimeEntries" >
-       <rdf:Description  rdf:about="{$baseURI}publication{ancestor::api:object@id}-dateSubmitted">
+   <xsl:template match="api:field[@name='date']" mode="objectEntries" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+       <rdf:Description  rdf:about="{$baseURI}publication{$rid}-date">
          <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
          <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
+         <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/date"/>
          <xsl:apply-templates select="."  mode="dateTimeValue" />
        </rdf:Description>
     </xsl:template>
 
-    <xsl:template match="api:field[@name='date-awarded']" mode="dateTimeReferences" >
-        <svo:date-awarded rdf:resource="{$baseURI}publication{ancestor::api:object@id}-dateAwarded"/>
+    <xsl:template match="api:field[@name='date-submitted']" mode="objectReferences" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+        <core:dateTimeValue rdf:resource="{$baseURI}publication{$rid}-dateSubmitted"/>
     </xsl:template>
     
-   <xsl:template match="api:field[@name='date-awarded']" mode="dateTimeEntries" >
-       <rdf:Description  rdf:about="{$baseURI}publication{ancestor::api:object@id}-dateAwarded">
+   <xsl:template match="api:field[@name='date-submitted']" mode="objectEntries" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+       <rdf:Description  rdf:about="{$baseURI}publication{$rid}-dateSubmitted">
          <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
          <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
+         <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/date-submitted"/>
          <xsl:apply-templates select="."  mode="dateTimeValue" />
        </rdf:Description>
     </xsl:template>
 
-    <xsl:template match="api:field[@name='conference-start-date']" mode="dateTimeReferences" >
-        <svo:conference-start-date rdf:resource="{$baseURI}publication{ancestor::api:object@id}-conferenceStartDate"/>
+    <xsl:template match="api:field[@name='date-awarded']" mode="objectReferences" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+        <core:dateTimeValue rdf:resource="{$baseURI}publication{$rid}-dateAwarded"/>
     </xsl:template>
     
-   <xsl:template match="api:field[@name='conference-start-date']" mode="dateTimeEntries" >
-       <rdf:Description  rdf:about="{$baseURI}publication{ancestor::api:object@id}-conferenceStartDate">
+   <xsl:template match="api:field[@name='date-awarded']" mode="objectEntries" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+       <rdf:Description  rdf:about="{$baseURI}publication{$rid}-dateAwarded">
          <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
          <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
+         <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/date-awarded"/>
          <xsl:apply-templates select="."  mode="dateTimeValue" />
        </rdf:Description>
     </xsl:template>
 
-    <xsl:template match="api:field[@name='conference-finish-date']" mode="dateTimeReferences" >
-        <svo:conference-finish-date rdf:resource="{$baseURI}publication{ancestor::api:object@id}-conferenceFinishDate"/>
+     <!--  TODO: Apply some logic surrounding conference start and end dates, should be combind into a single dateTime value -->
+    <xsl:template match="api:field[@name='conference-start-date']" mode="objectReferences" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+        <core:dateTimeValue rdf:resource="{$baseURI}publication{$rid}-conferenceStartDates"/>
     </xsl:template>
     
-   <xsl:template match="api:field[@name='conference-finish-date']" mode="dateTimeEntries" >
-       <rdf:Description  rdf:about="{$baseURI}publication{ancestor::api:object@id}-conferenceFinishDate">
+   <xsl:template match="api:field[@name='conference-start-date']" mode="objectEntries" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+       <rdf:Description  rdf:about="{$baseURI}publication{$rid}-conferenceStartates">
          <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
          <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
+         <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/conference-start-date"/>
          <xsl:apply-templates select="."  mode="dateTimeValue" />
        </rdf:Description>
     </xsl:template>
 
-    <xsl:template match="api:field[@name='awarded-date']" mode="dateTimeReferences" >
-        <svo:awarded-date rdf:resource="{$baseURI}publication{ancestor::api:object@id}-awardedDate"/>
+    <xsl:template match="api:field[@name='conference-finish-date']" mode="objectReferences" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+        <core:dateTimeValue rdf:resource="{$baseURI}publication{$rid}-conferenceFinishDate"/>
     </xsl:template>
     
-   <xsl:template match="api:field[@name='awarded-date']" mode="dateTimeEntries" >
-       <rdf:Description  rdf:about="{$baseURI}publication{ancestor::api:object@id}-awardedDate">
+   <xsl:template match="api:field[@name='conference-finish-date']" mode="objectEntries" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+       <rdf:Description  rdf:about="{$baseURI}publication{$rid}-conferenceFinishDate">
          <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
          <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
+         <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/conference-finish-date"/>
          <xsl:apply-templates select="."  mode="dateTimeValue" />
        </rdf:Description>
     </xsl:template>
+
+    <xsl:template match="api:field[@name='awarded-date']" mode="objectReferences" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+        <core:dateTimeValue rdf:resource="{$baseURI}publication{$rid}-awardedDate"/>
+    </xsl:template>
+    
+   <xsl:template match="api:field[@name='awarded-date']" mode="objectEntries" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+       <rdf:Description  rdf:about="{$baseURI}publication{$rid}-awardedDate">
+         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+         <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
+         <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/awarded-date"/>
+         <xsl:apply-templates select="."  mode="dateTimeValue" />
+       </rdf:Description>
+    </xsl:template>
+    
+    
+   <xsl:template match="api:field[@name='author-url']" mode="objectReferences">
+     <xsl:variable name="rid" select="ancestor::api:object/@id" />
+     <vivo:webpage rdf:resource="{$baseURI}publication{$rid}-authorWebpage"/>
+    </xsl:template>
+
+	<xsl:template match="api:field[@name='author-url']" mode="objectEntries">
+		<xsl:variable name="rid" select="ancestor::api:object/@id" />
+		<rdf:Description rdf:about="{$baseURI}publication{$rid}-authorWebpage">
+			<rdf:type rdf:resource="http://vivoweb.org/ontology/core#URLLink" />
+			<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing" />
+            <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/author-url"/>
+			<vivo:webpageOf rdf:resource="{$baseURI}publication{$rid}" />
+			<vivo:linkURI rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">
+				<xsl:value-of select="api:text" />
+			</vivo:linkURI>
+			<vivo:linkAnchorText rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">Author</vivo:linkAnchorText>
+		</rdf:Description>
+	</xsl:template>
+
+   <xsl:template match="api:field[@name='publisher-url']" mode="objectReferences">
+     <xsl:variable name="rid" select="ancestor::api:object/@id" />
+     <vivo:webpage rdf:resource="{$baseURI}publication{$rid}-publisherWebpage"/>
+    </xsl:template>
+
+    <xsl:template match="api:field[@name='publisher-url']" mode="objectEntries">
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+        <rdf:Description rdf:about="{$baseURI}publication{$rid}-publisherWebpage">
+            <rdf:type rdf:resource="http://vivoweb.org/ontology/core#URLLink" />
+            <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing" />
+            <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/publisher-url"/>
+            <vivo:webpageOf rdf:resource="{$baseURI}publication{$rid}" />
+            <vivo:linkURI rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">
+                <xsl:value-of select="api:text" />
+            </vivo:linkURI>
+            <vivo:linkAnchorText rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">Publisher</vivo:linkAnchorText>
+        </rdf:Description>
+    </xsl:template>
+    
 
 </xsl:stylesheet>

@@ -50,6 +50,12 @@ Configure the connection to you Elements Instance
     
     vi symplecticfetch.config.xml
 
+Configure the db connection for the harvester. 
+
+    vi fetcher-db.config.xml
+    
+The harvester maintains a list of all the URLs it has retrieved in a database. This enables it to main a list of urls it has retrieved and when they were retrieved. If you need to restart the harvester and you want to load a clean set you will need to empty the table first. In earlier versions a file was stored on disk to perform this task, however this approach is more manageable.
+    
 see the documentation in that file for information.
 
 
@@ -96,8 +102,9 @@ The fetch operation does not currently support re-fetching new resources, howeve
 
     rm -rf data
     rm -rf previous-harvest
-    rm loadstate
-    rm loadstate-fail
+    
+    # clean the database containing the fetch state. In mysql this table is called symplectic_fetch
+    
     sh run-fetch-only.sh
     # repeat the above until there is no more data to fetch
     sh run-ingest-only.sh

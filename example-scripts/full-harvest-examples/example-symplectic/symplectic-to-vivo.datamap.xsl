@@ -415,9 +415,9 @@
 	</xsl:template>
 
     <xsl:template match="api:field[@name='eISSN']">
-        <svo:eissn>
+        <bibo:eissn>
             <xsl:value-of select="api:text" />
-        </svo:eissn>
+        </bibo:eissn>
     </xsl:template>
 
     <xsl:template match="api:field[@name='book-title']">
@@ -432,11 +432,6 @@
         </svo:chapter-number>
     </xsl:template>
 
-    <xsl:template match="api:field[@name='conference-place']">
-        <svo:conference-place>
-            <xsl:value-of select="api:text" />
-        </svo:conference-place>
-    </xsl:template>
 
     <xsl:template match="api:field[@name='commissioning-body']">
         <svo:commissioning-body>
@@ -489,9 +484,9 @@
         </svo:finish-date>
     </xsl:template>
     <xsl:template match="api:field[@name='issue']">
-        <svo:issue>
+        <bibo:issue>
             <xsl:value-of select="api:text" />
-        </svo:issue>
+        </bibo:issue>
     </xsl:template>
     <xsl:template match="api:field[@name='journal']">
         <svo:journal>
@@ -558,11 +553,6 @@
             <xsl:value-of select="api:text" />
         </presentation-type>
     </xsl:template>
-    <xsl:template match="api:field[@name='presented-at']">
-        <svo:presented-at>
-            <xsl:value-of select="api:text" />
-        </svo:presented-at>
-    </xsl:template>    
     <xsl:template match="api:field[@name='producers']">
         <svo:producers>
             <xsl:value-of select="api:text" />
@@ -904,26 +894,26 @@
     
    <xsl:template match="api:field[@name='author-url']" mode="objectReferences">
      <xsl:variable name="rid" select="ancestor::api:object/@id" />
-     <vivo:webpage rdf:resource="{$baseURI}publication{$rid}-authorWebpage"/>
+     <core:webpage rdf:resource="{$baseURI}publication{$rid}-authorWebpage"/>
     </xsl:template>
 
 	<xsl:template match="api:field[@name='author-url']" mode="objectEntries">
-		<xsl:variable name="rid" select="ancestor::api:object/@id" />
+		<xsl:variable name="rid" select="ancestor::api:object/@id"/>
 		<rdf:Description rdf:about="{$baseURI}publication{$rid}-authorWebpage">
 			<rdf:type rdf:resource="http://vivoweb.org/ontology/core#URLLink" />
 			<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing" />
             <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/author-url"/>
-			<vivo:webpageOf rdf:resource="{$baseURI}publication{$rid}" />
-			<vivo:linkURI rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">
+			<core:webpageOf rdf:resource="{$baseURI}publication{$rid}" />
+			<core:linkURI rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">
 				<xsl:value-of select="api:text" />
-			</vivo:linkURI>
-			<vivo:linkAnchorText rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">Author</vivo:linkAnchorText>
+			</core:linkURI>
+			<core:linkAnchorText rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">Author</core:linkAnchorText>
 		</rdf:Description>
 	</xsl:template>
 
    <xsl:template match="api:field[@name='publisher-url']" mode="objectReferences">
      <xsl:variable name="rid" select="ancestor::api:object/@id" />
-     <vivo:webpage rdf:resource="{$baseURI}publication{$rid}-publisherWebpage"/>
+     <core:webpage rdf:resource="{$baseURI}publication{$rid}-publisherWebpage"/>
     </xsl:template>
 
     <xsl:template match="api:field[@name='publisher-url']" mode="objectEntries">
@@ -932,13 +922,91 @@
             <rdf:type rdf:resource="http://vivoweb.org/ontology/core#URLLink" />
             <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing" />
             <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/publisher-url"/>
-            <vivo:webpageOf rdf:resource="{$baseURI}publication{$rid}" />
-            <vivo:linkURI rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">
+            <core:webpageOf rdf:resource="{$baseURI}publication{$rid}" />
+            <core:linkURI rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">
                 <xsl:value-of select="api:text" />
-            </vivo:linkURI>
-            <vivo:linkAnchorText rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">Publisher</vivo:linkAnchorText>
+            </core:linkURI>
+            <core:linkAnchorText rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">Publisher</core:linkAnchorText>
         </rdf:Description>
     </xsl:template>
+
+    <xsl:template match="api:field[@name='presented-at']">
+        <svo:presented-at>
+            <xsl:value-of select="api:text" />
+        </svo:presented-at>
+    </xsl:template>    
     
+
+
+    <!--  start of a group of templates that only outputs 1 object reference -->
+    <xsl:template match="api:field[@name='presented-at']" mode="objectReferences" >
+     <xsl:variable name="rid" select="ancestor::api:object/@id" />
+     <bibo:presentedAt rdf:resource="{$baseURI}publication{$rid}-presentedAt"/>
+    </xsl:template>
+    <xsl:template match="api:field[@name='conference-place']" mode="objectReferences" >
+     <xsl:variable name="rid" select="ancestor::api:object/@id" />
+     <xsl:choose>
+                <xsl:when test="ancestor::api:native/api:field[@name='presented-at']">
+                </xsl:when>
+                <xsl:otherwise>
+                    <bibo:presentedAt rdf:resource="{$baseURI}publication{$rid}-presentedAt"/>
+                </xsl:otherwise>
+     </xsl:choose>
+    </xsl:template>
+    <xsl:template match="api:field[@name='name-of-conference']" mode="objectReferences" >
+     <xsl:variable name="rid" select="ancestor::api:object/@id" />
+     <bibo:presentedAt rdf:resource="{$baseURI}publication{$rid}-presentedAt"/>
+     <xsl:choose>
+                <xsl:when test="ancestor::api:native/api:field[@name='presented-at']">
+                </xsl:when>
+                <xsl:when test="ancestor::api:native/api:field[@name='conference-place']">
+                </xsl:when>
+                <xsl:otherwise>
+                    <bibo:presentedAt rdf:resource="{$baseURI}publication{$rid}-presentedAt"/>
+                </xsl:otherwise>
+     </xsl:choose>
+    </xsl:template>
+    <!--  end of group -->
+    
+    <xsl:template match="api:field[@name='conference-place']" mode="objectEntries">
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+        <rdf:Description rdf:about="{$baseURI}publication{$rid}-presentedAt">
+            <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing" />
+            <xsl:if test="ancestor::api:native/api:field[@name='conference-place']">
+                <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/conference-place"/>
+            </xsl:if>
+            <xsl:if test="ancestor::api:native/api:field[@name='presented-at']">
+                <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/presented-at"/>
+            </xsl:if>
+            <xsl:if test="ancestor::api:native/api:field[@name='name-of-conference']">
+                <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/name-of-conference"/>
+            </xsl:if>
+            <xsl:choose>
+                <xsl:when test="ancestor::api:native/api:field[@name='presented-at']">
+                            <rdfs:label><xsl:value-of select="ancestor::api:native/api:field[@name='presented-at']/api:text" /></rdfs:label>                                   
+                </xsl:when>
+	            <xsl:when test="ancestor::api:native/api:field[@name='name-of-conference'] and 
+	                            ancestor::api:native/api:field[@name='conference-place']">
+                            <rdfs:label>
+                                <xsl:value-of select="ancestor::api:native/api:field[@name='name-of-conference']/api:text" />
+                                <xsl:value-of select="ancestor::api:native/api:field[@name='conference-place']/api:text" />
+                            </rdfs:label>                
+	            </xsl:when>
+                <xsl:when test="ancestor::api:native/api:field[@name='name-of-conference']">
+                            <rdfs:label>
+                                <xsl:value-of select="ancestor::api:native/api:field[@name='name-of-conference']/api:text" />
+                                <xsl:value-of select="ancestor::api:native/api:field[@name='conference-place']/api:text" />
+                            </rdfs:label>                
+                </xsl:when>
+                <xsl:when test="ancestor::api:native/api:field[@name='conference-place']">
+                            <rdfs:label>
+                                <xsl:value-of select="ancestor::api:native/api:field[@name='name-of-conference']/api:text" />
+                                <xsl:value-of select="ancestor::api:native/api:field[@name='conference-place']/api:text" />
+                            </rdfs:label>                
+                </xsl:when>
+            </xsl:choose>
+        </rdf:Description>
+    </xsl:template>
+
 
 </xsl:stylesheet>

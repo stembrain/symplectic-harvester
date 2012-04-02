@@ -276,11 +276,6 @@
 			<xsl:value-of select="api:text" />
 		</bibo:abstract>
 	</xsl:template>
-	<xsl:template match="api:field[@name='series']">
-		<bibo:number>
-			<xsl:value-of select="api:text" />
-		</bibo:number>
-	</xsl:template>
 	<xsl:template match="api:field[@name='edition']">
 		<bibo:edition>
 			<xsl:value-of select="api:text" />
@@ -295,15 +290,15 @@
 	 -->
 	<xsl:template match="api:field[@name='pagination']">
 		<xsl:choose>
-		   <xsl:when test="string(api:begin-page) and string(api:end-page)">
-		    <bibo:pageStart><xsl:value-of select="api:begin-page" /></bibo:pageStart>
-		    <bibo:pageEnd><xsl:value-of select="api:end-page" /></bibo:pageEnd>
+		   <xsl:when test="string(api:pagination/api:begin-page) and string(api:pagination/api:end-page)">
+		    <bibo:pageStart><xsl:value-of select="api:pagination/api:begin-page" /></bibo:pageStart>
+		    <bibo:pageEnd><xsl:value-of select="api:pagination/api:end-page" /></bibo:pageEnd>
 		   </xsl:when>
-		   <xsl:when test="string(api:begin-page)">
-            <bibo:pageStart><xsl:value-of select="api:begin-page" /></bibo:pageStart>
+		   <xsl:when test="string(api:pagination/api:begin-page)">
+            <bibo:pageStart><xsl:value-of select="api:pagination/api:begin-page" /></bibo:pageStart>
 		   </xsl:when>
-		   <xsl:when test="string(api:end-page)">
-            <bibo:pageEnd><xsl:value-of select="api:end-page" /></bibo:pageEnd>
+		   <xsl:when test="string(api:pagination/api:end-page)">
+            <bibo:pageEnd><xsl:value-of select="api:pagination/api:end-page" /></bibo:pageEnd>
 		   </xsl:when>
 		</xsl:choose>
 	</xsl:template>
@@ -433,11 +428,6 @@
     </xsl:template>
 
 
-    <xsl:template match="api:field[@name='commissioning-body']">
-        <svo:commissioning-body>
-            <xsl:value-of select="api:text" />
-        </svo:commissioning-body>
-    </xsl:template>
 
     <xsl:template match="api:field[@name='country']">
         <svo:country>
@@ -455,17 +445,7 @@
             <xsl:value-of select="api:text" />
         </svo:confidential>
     </xsl:template>
-
-    <xsl:template match="api:field[@name='credits']">
-        <svo:credits>
-            <xsl:value-of select="api:text" />
-        </svo:credits>
-    </xsl:template>
-    <xsl:template match="api:field[@name='distributors']">
-        <svo:distributors>
-            <xsl:value-of select="api:text" />
-        </svo:distributors>
-    </xsl:template>
+    
  
     <xsl:template match="api:field[@name='event-title']">
         <svo:event-title>
@@ -478,25 +458,15 @@
         </svo:event-type>
     </xsl:template>
  
-    <xsl:template match="api:field[@name='finish-date']">
-        <svo:finish-date>
-            <xsl:value-of select="api:text" />
-        </svo:finish-date>
-    </xsl:template>
     <xsl:template match="api:field[@name='issue']">
         <bibo:issue>
             <xsl:value-of select="api:text" />
         </bibo:issue>
     </xsl:template>
-    <xsl:template match="api:field[@name='journal']">
-        <svo:journal>
-            <xsl:value-of select="api:text" />
-        </svo:journal>
-    </xsl:template>
     <xsl:template match="api:field[@name='identification-number']">
-        <svo:identification-number>
+        <bibo:number>
             <xsl:value-of select="api:text" />
-        </svo:identification-number>
+        </bibo:number>
     </xsl:template>
     <xsl:template match="api:field[@name='language']">
         <svo:language>
@@ -513,7 +483,7 @@
             <xsl:value-of select="api:text" />
         </svo:location-of-work>
     </xsl:template>
-    <xsl:template match="api:field[@name='monograph-type']">
+    <xsl:template match="api:field[@name='c-monograph-type']">
         <svo:monograph-type>
             <xsl:value-of select="api:text" />
         </svo:monograph-type>
@@ -576,9 +546,9 @@
         </svo:references>
     </xsl:template>
     <xsl:template match="api:field[@name='report-number']">
-        <svo:report-number>
+        <bibo:number>
             <xsl:value-of select="api:text" />
-        </svo:report-number>
+        </bibo:number>
     </xsl:template>
     <xsl:template match="api:field[@name='report-title']">
         <svo:report-title>
@@ -599,11 +569,6 @@
         <svo:size>
             <xsl:value-of select="api:text" />
         </svo:size>
-    </xsl:template>
-    <xsl:template match="api:field[@name='series-name']">
-        <svo:series-name>
-            <xsl:value-of select="api:text" />
-        </svo:series-name>
     </xsl:template>
     <xsl:template match="api:field[@name='status']">
         <xsl:choose>
@@ -642,11 +607,6 @@
             <xsl:value-of select="api:text" />
         </svo:status>
     </xsl:template>
-    <xsl:template match="api:field[@name='supervisors']">
-        <svo:supervisors>
-            <xsl:value-of select="api:text" />
-        </svo:supervisors>
-    </xsl:template>
     <xsl:template match="api:field[@name='sub-types']">
         <svo:sub-types>
             <xsl:value-of select="api:text" />
@@ -656,11 +616,6 @@
         <svo:territory>
             <xsl:value-of select="api:text" />
         </svo:territory>
-    </xsl:template>
-    <xsl:template match="api:field[@name='thesis-type']">
-        <svo:thesis-type>
-            <xsl:value-of select="api:text" />
-        </svo:thesis-type>
     </xsl:template>
     <xsl:template match="api:field[@name='transmission']">
         <svo:transmission>
@@ -696,10 +651,9 @@
 	<!-- book chapter, but could also be all sorts of other things, need to 
 		look at the category to work out which -->
 	<xsl:template match="api:field[@name='number']">
-	<!--  number is only present for Books accorting to /publications/type -->
-		<bibo:chapter>
+		<bibo:number>
 			<xsl:value-of select="api:text" />
-		</bibo:chapter>
+		</bibo:number>
 	</xsl:template>
 
 
@@ -875,6 +829,20 @@
          <xsl:apply-templates select="."  mode="dateTimeValue" />
        </rdf:Description>
     </xsl:template>
+    <xsl:template match="api:field[@name='finish-date']" mode="objectReferences" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+        <core:dateTimeValue rdf:resource="{$baseURI}publication{$rid}-finishDate"/>
+    </xsl:template>
+    
+   <xsl:template match="api:field[@name='finish-date']" mode="objectEntries" >
+        <xsl:variable name="rid" select="ancestor::api:object/@id" />
+       <rdf:Description  rdf:about="{$baseURI}publication{$rid}-finishDate">
+         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+         <rdf:type rdf:resource="http://vivoweb.org/ontology/core#DateTimeValue"/>
+         <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/finish-date"/>
+         <xsl:apply-templates select="."  mode="dateTimeValue" />
+       </rdf:Description>
+    </xsl:template>
 
     <xsl:template match="api:field[@name='awarded-date']" mode="objectReferences" >
         <xsl:variable name="rid" select="ancestor::api:object/@id" />
@@ -926,15 +894,9 @@
             <core:linkURI rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">
                 <xsl:value-of select="api:text" />
             </core:linkURI>
-            <core:linkAnchorText rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">Publisher</core:linkAnchorText>
+            <core:linkAnchorText rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">Download Original</core:linkAnchorText>
         </rdf:Description>
     </xsl:template>
-
-    <xsl:template match="api:field[@name='presented-at']">
-        <svo:presented-at>
-            <xsl:value-of select="api:text" />
-        </svo:presented-at>
-    </xsl:template>    
     
 
 
@@ -943,6 +905,7 @@
      <xsl:variable name="rid" select="ancestor::api:object/@id" />
      <bibo:presentedAt rdf:resource="{$baseURI}publication{$rid}-presentedAt"/>
     </xsl:template>
+    
     <xsl:template match="api:field[@name='conference-place']" mode="objectReferences" >
      <xsl:variable name="rid" select="ancestor::api:object/@id" />
      <xsl:choose>
@@ -953,9 +916,9 @@
                 </xsl:otherwise>
      </xsl:choose>
     </xsl:template>
+    
     <xsl:template match="api:field[@name='name-of-conference']" mode="objectReferences" >
      <xsl:variable name="rid" select="ancestor::api:object/@id" />
-     <bibo:presentedAt rdf:resource="{$baseURI}publication{$rid}-presentedAt"/>
      <xsl:choose>
                 <xsl:when test="ancestor::api:native/api:field[@name='presented-at']">
                 </xsl:when>
@@ -968,10 +931,17 @@
     </xsl:template>
     <!--  end of group -->
     
-    <xsl:template match="api:field[@name='conference-place']" mode="objectEntries">
+    <xsl:template match="api:field[@name='conference-place' or @name='presented-at' or @name='name-of-conference']" mode="objectEntries">
         <xsl:variable name="rid" select="ancestor::api:object/@id" />
         <rdf:Description rdf:about="{$baseURI}publication{$rid}-presentedAt">
             <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing" />
+		    <rdf:type rdf:resource="http://purl.org/NET/c4dm/event.owl#Event"/>
+		    <rdf:type rdf:resource="http://purl.org/ontology/bibo/Conference"/>
+            <xsl:if test="ancestor::api:native/api:field[@name='location']">
+                <core:hasGeographicLocation rdf:resource="{$baseURI}publication{$rid}-presentedAtLocation"/>
+            </xsl:if>
+            <bibo:presents rdf:resource="{$baseURI}publication{$rid}"/>
+            
             <xsl:if test="ancestor::api:native/api:field[@name='conference-place']">
                 <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/conference-place"/>
             </xsl:if>
@@ -1006,7 +976,171 @@
                 </xsl:when>
             </xsl:choose>
         </rdf:Description>
+        <xsl:if test="ancestor::api:native/api:field[@name='location']">
+            <rdf:Description rdf:about="{$baseURI}publication{$rid}-presentedAtLocation">
+               <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+               <rdf:type rdf:resource="http://vivoweb.org/ontology/core#Location"/>
+               <rdf:type rdf:resource="http://vivoweb.org/ontology/core#GeographicLocation"/>
+               <core:geographicLocationOf rdf:resource="{$baseURI}publication{$rid}-presentedAt"/>
+               <rdfs:label><xsl:value-of select="ancestor::api:native/api:field[@name='location']/api:text" /></rdfs:label>
+            </rdf:Description>
+        </xsl:if>
     </xsl:template>
+    
+    
+    <xsl:template match="api:field[@name='series']" mode="objectReferences">
+     <xsl:variable name="rid" select="ancestor::api:object/@id" />
+     <core:hasPublicationVenue rdf:resource="{$baseURI}publication{$rid}-series"/>
+    </xsl:template>
+
+    <xsl:template match="api:field[@name='series']" mode="objectEntries">
+        <xsl:variable name="rid" select="ancestor::api:object/@id"/>
+        <rdf:Description rdf:about="{$baseURI}publication{$rid}-series">
+		    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+		    <rdf:type rdf:resource="http://purl.org/ontology/bibo/Series"/>
+		    <rdf:type rdf:resource="http://vivoweb.org/ontology/core#InformationResource"/>
+		    <rdf:type rdf:resource="http://purl.org/ontology/bibo/Collection"/>
+		    <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/series"/>
+		    <rdfs:label>
+		                <xsl:value-of select="api:text" />
+		    </rdfs:label>
+        </rdf:Description>
+    </xsl:template>
+    
+    <xsl:template match="api:field[@name='series-name']" mode="objectReferences">
+     <xsl:variable name="rid" select="ancestor::api:object/@id" />
+     <core:informationProductOf rdf:resource="{$baseURI}publication{$rid}-seriesName"/>
+    </xsl:template>
+
+    <xsl:template match="api:field[@name='series-name']" mode="objectEntries">
+        <xsl:variable name="rid" select="ancestor::api:object/@id"/>
+        <rdf:Description rdf:about="{$baseURI}publication{$rid}-seriesName">
+            <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+            <rdf:type rdf:resource="http://purl.org/ontology/bibo/Series"/>
+            <rdf:type rdf:resource="http://vivoweb.org/ontology/core#InformationResource"/>
+            <rdf:type rdf:resource="http://purl.org/ontology/bibo/Collection"/>
+            <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/series-name"/>
+            <rdfs:label>
+                        <xsl:value-of select="api:text" />
+            </rdfs:label>
+        </rdf:Description>
+    </xsl:template>
+
+
+    <xsl:template match="api:field[@name='journal']" mode="objectReferences">
+     <xsl:variable name="rid" select="ancestor::api:object/@id" />
+     <core:hasPublicationVenue rdf:resource="{$baseURI}publication{$rid}-journal"/>
+    </xsl:template>
+
+    <xsl:template match="api:field[@name='journal']" mode="objectEntries">
+        <xsl:variable name="rid" select="ancestor::api:object/@id"/>
+        <rdf:Description rdf:about="{$baseURI}publication{$rid}-journal">
+		    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+		    <rdf:type rdf:resource="http://purl.org/ontology/bibo/Periodical"/>
+		    <rdf:type rdf:resource="http://purl.org/ontology/bibo/Journal"/>
+		    <rdf:type rdf:resource="http://vivoweb.org/ontology/core#InformationResource"/>
+		    <rdf:type rdf:resource="http://purl.org/ontology/bibo/Collection"/>
+            <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/journal"/>
+            <rdfs:label>
+                  <xsl:value-of select="api:text" />
+            </rdfs:label>
+        </rdf:Description>
+    </xsl:template>
+
+
+    <xsl:template match="api:field[@name='commissioning-body']" mode="objectReferences">
+     <xsl:variable name="rid" select="ancestor::api:object/@id" />
+     <core:informationResourceSupportedBy rdf:resource="{$baseURI}publication{$rid}-commissioningBody"/>
+    </xsl:template>
+
+    <xsl:template match="api:field[@name='commissioning-body']" mode="objectEntries">
+        <xsl:variable name="rid" select="ancestor::api:object/@id"/>
+        <rdf:Description rdf:about="{$baseURI}publication{$rid}-commissioningBody">
+		    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+		    <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
+		    <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+		    <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/commissioning-body"/>
+            <rdfs:label>
+                  <xsl:value-of select="api:text" />
+            </rdfs:label>
+        </rdf:Description>
+    </xsl:template>
+
+
+    <xsl:template match="api:field[@name='supervisors']" mode="objectReferences">
+     <xsl:variable name="rid" select="ancestor::api:object/@id" />
+     <core:informationResourceSupportedBy rdf:resource="{$baseURI}publication{$rid}-supervisors"/>
+    </xsl:template>
+
+    <xsl:template match="api:field[@name='supervisors']" mode="objectEntries">
+        <xsl:variable name="rid" select="ancestor::api:object/@id"/>
+        <rdf:Description rdf:about="{$baseURI}publication{$rid}-supervisors">
+            <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+            <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
+            <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+            <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/supervisors"/>
+            <rdfs:label>
+                  <xsl:value-of select="api:text" />
+            </rdfs:label>
+        </rdf:Description>
+    </xsl:template>
+    
+    
+
+    <xsl:template match="api:field[@name='thesis-type']" mode="objectReferences">
+     <xsl:variable name="rid" select="ancestor::api:object/@id" />
+     <bibo:degree rdf:resource="{$baseURI}publication{$rid}-thesisType"/>
+    </xsl:template>
+
+    <xsl:template match="api:field[@name='thesis-type']" mode="objectEntries">
+        <xsl:variable name="rid" select="ancestor::api:object/@id"/>
+        <rdf:Description rdf:about="{$baseURI}publication{$rid}-thesisType">
+            <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+		    <rdf:type rdf:resource="http://purl.org/ontology/bibo/ThesisDegree"/>
+		    <rdf:type rdf:resource="http://vivoweb.org/ontology/core#AcademicDegree"/>
+            <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/thesis-type"/>
+            <rdfs:label>
+                  <xsl:value-of select="api:text" />
+            </rdfs:label>
+        </rdf:Description>
+    </xsl:template>
+    
+    <xsl:template match="api:field[@name='credits']" mode="objectReferences">
+     <xsl:variable name="rid" select="ancestor::api:object/@id" />
+     <core:informationResourceSupportedBy rdf:resource="{$baseURI}publication{$rid}-credits"/>
+    </xsl:template>
+
+    <xsl:template match="api:field[@name='credits']" mode="objectEntries">
+        <xsl:variable name="rid" select="ancestor::api:object/@id"/>
+        <rdf:Description rdf:about="{$baseURI}publication{$rid}-credits">
+            <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+            <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/credits"/>
+            <rdfs:label>
+                  <xsl:value-of select="api:text" />
+            </rdfs:label>
+        </rdf:Description>
+    </xsl:template>
+
+
+
+    <xsl:template match="api:field[@name='distributors']" mode="objectReferences">
+     <xsl:variable name="rid" select="ancestor::api:object/@id" />
+     <bibo:distributor rdf:resource="{$baseURI}publication{$rid}-distributors"/>
+    </xsl:template>
+
+    <xsl:template match="api:field[@name='distributors']" mode="objectEntries">
+        <xsl:variable name="rid" select="ancestor::api:object/@id"/>
+        <rdf:Description rdf:about="{$baseURI}publication{$rid}-distributors">
+            <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+            <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
+            <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+            <rdf:type rdf:resource="http://www.symplectic.co.uk/vivo/distributors"/>
+            <rdfs:label>
+                  <xsl:value-of select="api:text" />
+            </rdfs:label>
+        </rdf:Description>
+    </xsl:template>
+
 
 
 </xsl:stylesheet>

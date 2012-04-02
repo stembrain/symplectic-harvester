@@ -15,6 +15,16 @@
 #	data could be rendered corrupted and incompatible.
 set -e
 
+BASE_URI=`grep 'xsl:variable name="baseURI"' symplectic-to-vivo.datamap.xsl  | sed 's/.*>\(.*\)<.*/\1/'`
+if [ a$BASE_URI = "ahttp://changeme/to/match/vivo/deploy/properties" ]; then
+   echo Please change the baseURI settings in symplectic-to-vivo.datamap.xsl to match your vivo deploy.properties
+   grep 'xsl:variable name="baseURI"' symplectic-to-vivo.datamap.xsl
+   exit
+fi
+echo Base URI is $BASE_URI
+
+
+
 # Supply the location of the detailed log file which is generated during the script.
 #	If there is an issue with a harvest, this file proves invaluable in finding
 #	a solution to the problem. It has become common practice in addressing a problem
@@ -65,6 +75,9 @@ harvester-xsltranslator -X xsltranslator.config.xml
 harvester-transfer -s translated-records.config.xml -o matched-data.model.xml -d data/matched-data/imported-records.rdf.xml
 
 
+
+
+
 # Perform an update
 # The harvester maintains copies of previous harvests in order to perform the same harvest twice
 #   but only add the new statements, while removing the old statements that are no longer
@@ -98,5 +111,10 @@ PUBS=`cat data/vivo-additions.rdf.xml | grep 'http://vivoweb.org/ontology/core#I
 AUTHORS=`cat data/vivo-additions.rdf.xml | grep 'http://xmlns.com/foaf/0.1/Person' | wc -l`
 AUTHORSHIPS=`cat data/vivo-additions.rdf.xml | grep Authorship | wc -l`
 echo "Imported $PUBS publications, $AUTHORS authors, and $AUTHORSHIPS authorships"
+
+
+harvester-smush -r -i vivo.model.xml -P http://www.symplectic.co.uk/vivo/smush -n $BASE_URI
+
+echo "Smush completed"
 
 echo 'Harvest completed successfully'

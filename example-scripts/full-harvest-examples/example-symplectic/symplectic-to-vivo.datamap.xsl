@@ -12,7 +12,7 @@
 
 	<!-- This will create indenting in xml readers -->
 	<xsl:output method="xml" indent="yes" />
-	<xsl:variable name="baseURI">http://vivo.tfd.co.uk/individual/</xsl:variable>
+	<xsl:variable name="baseURI">http://changeme/to/match/vivo/deploy/properties</xsl:variable>
 
 	<xsl:template match="/svo:object/api:object[@category='user']">
 		<rdf:RDF xmlns:owlPlus='http://www.w3.org/2006/12/owl2-xml#'
@@ -876,6 +876,8 @@
 				<xsl:value-of select="api:text" />
 			</core:linkURI>
 			<core:linkAnchorText rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">Author</core:linkAnchorText>
+            <!--  add properties to enable smushing -->
+            <svo:smush>author-url:<xsl:value-of select="api:text" /></svo:smush>
 		</rdf:Description>
 	</xsl:template>
 
@@ -895,6 +897,8 @@
                 <xsl:value-of select="api:text" />
             </core:linkURI>
             <core:linkAnchorText rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">Download Original</core:linkAnchorText>
+            <!--  add properties to enable smushing -->
+            <svo:smush>publisher-url:<xsl:value-of select="api:text" /></svo:smush>
         </rdf:Description>
     </xsl:template>
     
@@ -975,6 +979,8 @@
                             </rdfs:label>                
                 </xsl:when>
             </xsl:choose>
+            <!--  add properties to enable smushing -->
+            <svo:smush>presentedat:<xsl:value-of select="api:text" /></svo:smush>
         </rdf:Description>
         <xsl:if test="ancestor::api:native/api:field[@name='location']">
             <rdf:Description rdf:about="{$baseURI}publication{$rid}-presentedAtLocation">
@@ -983,6 +989,8 @@
                <rdf:type rdf:resource="http://vivoweb.org/ontology/core#GeographicLocation"/>
                <core:geographicLocationOf rdf:resource="{$baseURI}publication{$rid}-presentedAt"/>
                <rdfs:label><xsl:value-of select="ancestor::api:native/api:field[@name='location']/api:text" /></rdfs:label>
+	            <!--  add properties to enable smushing -->
+	            <svo:smush>location:<xsl:value-of select="api:text" /></svo:smush>
             </rdf:Description>
         </xsl:if>
     </xsl:template>
@@ -1004,9 +1012,10 @@
 		    <rdfs:label>
 		                <xsl:value-of select="api:text" />
 		    </rdfs:label>
+            <!--  add properties to enable smushing -->
+            <svo:smush>series:<xsl:value-of select="api:text" /></svo:smush>
         </rdf:Description>
     </xsl:template>
-    
     <xsl:template match="api:field[@name='series-name']" mode="objectReferences">
      <xsl:variable name="rid" select="ancestor::api:object/@id" />
      <core:informationProductOf rdf:resource="{$baseURI}publication{$rid}-seriesName"/>
@@ -1023,6 +1032,8 @@
             <rdfs:label>
                         <xsl:value-of select="api:text" />
             </rdfs:label>
+            <!--  add properties to enable smushing -->
+            <svo:smush>serise-name:<xsl:value-of select="api:text" /></svo:smush>
         </rdf:Description>
     </xsl:template>
 
@@ -1044,6 +1055,8 @@
             <rdfs:label>
                   <xsl:value-of select="api:text" />
             </rdfs:label>
+            <!--  add properties to enable smushing -->
+            <svo:smush>journal:<xsl:value-of select="api:text" /></svo:smush>
         </rdf:Description>
     </xsl:template>
 
@@ -1063,6 +1076,8 @@
             <rdfs:label>
                   <xsl:value-of select="api:text" />
             </rdfs:label>
+            <!--  add properties to enable smushing -->
+            <svo:smush>commissioning-body:<xsl:value-of select="api:text" /></svo:smush>
         </rdf:Description>
     </xsl:template>
 
@@ -1082,6 +1097,8 @@
             <rdfs:label>
                   <xsl:value-of select="api:text" />
             </rdfs:label>
+            <!--  add properties to enable smushing -->
+            <svo:smush>supervisors:<xsl:value-of select="api:text" /></svo:smush>
         </rdf:Description>
     </xsl:template>
     
@@ -1102,6 +1119,8 @@
             <rdfs:label>
                   <xsl:value-of select="api:text" />
             </rdfs:label>
+            <!--  add properties to enable smushing -->
+            <svo:smush>thesis-type:<xsl:value-of select="api:text" /></svo:smush>
         </rdf:Description>
     </xsl:template>
     
@@ -1138,6 +1157,8 @@
             <rdfs:label>
                   <xsl:value-of select="api:text" />
             </rdfs:label>
+            <!--  add properties to enable smushing -->
+            <svo:smush>distributors:<xsl:value-of select="api:text" /></svo:smush>
         </rdf:Description>
     </xsl:template>
 

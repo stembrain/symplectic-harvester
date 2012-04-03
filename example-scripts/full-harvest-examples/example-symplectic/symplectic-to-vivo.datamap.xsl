@@ -3,7 +3,7 @@
    | Copyright (c) 2011 Ian Boston for Symplectic, relicensed under the AGPL license in repository https://github.com/ieb/symplectic-harvester
    | Please see the LICENSE file for more details
  -->
-<xsl:stylesheet version="2.0"
+<xsl:stylesheet version="1.0"
 	xmlns:svo="http://www.symplectic.co.uk/vivo/" xmlns:api="http://www.symplectic.co.uk/publications/api"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 	xmlns:core="http://vivoweb.org/ontology/core#" xmlns:foaf="http://xmlns.com/foaf/0.1/"
@@ -15,43 +15,91 @@
 	<xsl:variable name="baseURI">http://changeme/to/match/vivo/deploy/properties</xsl:variable>
 
 	<xsl:template match="/svo:object/api:object[@category='user']">
-		<rdf:RDF xmlns:owlPlus='http://www.w3.org/2006/12/owl2-xml#'
-			xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:skos='http://www.w3.org/2008/05/skos#'
-			xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' xmlns:owl='http://www.w3.org/2002/07/owl#'
-			xmlns:vocab='http://purl.org/vocab/vann/' xmlns:swvocab='http://www.w3.org/2003/06/sw-vocab-status/ns#'
-			xmlns:dc='http://purl.org/dc/elements/1.1/' xmlns:vitro='http://vitro.mannlib.cornell.edu/ns/vitro/0.7#'
-			xmlns:core='http://vivoweb.org/ontology/core#' xmlns:foaf='http://xmlns.com/foaf/0.1/'
-			xmlns:score='http://vivoweb.org/ontology/score#' xmlns:xs='http://www.w3.org/2001/XMLSchema#'
-			xmlns:svo='http://www.symplectic.co.uk/vivo/' xmlns:api='http://www.symplectic.co.uk/publications/api'
-			xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'>
-			
-			<!--  Main user object -->
-		    <rdf:Description rdf:about="{$baseURI}user{@id}">
-		    	<ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
-				<score:email>
-					<xsl:value-of select="api:email-address" />
-				</score:email>
-				<rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person" />
-				<rdfs:label>
-					<xsl:value-of select="api:last-name" />, <xsl:value-of select="api:first-name" />
-				</rdfs:label>
-				<foaf:lastName>
-					<xsl:value-of select="api:last-name" />
-				</foaf:lastName>
-				<score:foreName>
-					<xsl:value-of select="api:first-name" />
-				</score:foreName>
-				<score:initials>
-					<xsl:value-of select="api:initials" />
-				</score:initials>
-				<rdf:type rdf:resource="http://vivoweb.org/harvester/excludeEntity" />
-				<rdf:type
-					rdf:resource="http://vitro.mannlib.cornell.edu/ns/vitro/0.7#Flag1Value1Thing" />
-				<rdf:type
-					rdf:resource="http://www.symplectic.co.uk/vivo/User" />
-				<xsl:apply-templates select="api:organisation-defined-data" />
-			</rdf:Description>
-		</rdf:RDF>
+	    <xsl:if test="api:is-academic != 'true'"> <!--  BU customization -->
+	    
+			<rdf:RDF xmlns:owlPlus='http://www.w3.org/2006/12/owl2-xml#'
+				xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:skos='http://www.w3.org/2008/05/skos#'
+				xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' xmlns:owl='http://www.w3.org/2002/07/owl#'
+				xmlns:vocab='http://purl.org/vocab/vann/' xmlns:swvocab='http://www.w3.org/2003/06/sw-vocab-status/ns#'
+				xmlns:dc='http://purl.org/dc/elements/1.1/' xmlns:vitro='http://vitro.mannlib.cornell.edu/ns/vitro/0.7#'
+				xmlns:core='http://vivoweb.org/ontology/core#' xmlns:foaf='http://xmlns.com/foaf/0.1/'
+				xmlns:score='http://vivoweb.org/ontology/score#' xmlns:xs='http://www.w3.org/2001/XMLSchema#'
+				xmlns:svo='http://www.symplectic.co.uk/vivo/' xmlns:api='http://www.symplectic.co.uk/publications/api'
+				xmlns:vitro-public="http://vitro.mannlib.cornell.edu/ns/vitro/public#"
+				xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'>
+				
+				<!--  Main user object -->
+			    <rdf:Description rdf:about="{$baseURI}{@username}">
+			    	<ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
+					<score:email>
+						<xsl:value-of select="api:email-address" />
+					</score:email>
+					<rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person" />
+					<rdfs:label>
+						<xsl:value-of select="api:last-name" />, <xsl:value-of select="api:first-name" />
+					</rdfs:label>
+					<foaf:lastName>
+						<xsl:value-of select="api:last-name" />
+					</foaf:lastName>
+					<score:foreName>
+						<xsl:value-of select="api:first-name" />
+					</score:foreName>
+					<score:initials>
+						<xsl:value-of select="api:initials" />
+					</score:initials>
+					<rdf:type rdf:resource="http://vivoweb.org/harvester/excludeEntity" />
+					<rdf:type
+						rdf:resource="http://vitro.mannlib.cornell.edu/ns/vitro/0.7#Flag1Value1Thing" />
+					<rdf:type
+						rdf:resource="http://www.symplectic.co.uk/vivo/User" />
+					<vitro-public:mainImage rdf:resource="{$baseURI}{@username}-image"/>
+					
+					<xsl:apply-templates select="api:records/api:record[1]" mode="objectReferences" /> 
+                    <xsl:apply-templates select="api:organisation-defined-data" mode="objectReferences" />
+                
+                    <ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
+                    <xsl:apply-templates select="api:records/api:record[1]" />
+                    <xsl:apply-templates select="api:organisation-defined-data" />
+					
+				</rdf:Description>
+				<!--  users Icon.
+				The users Icon file is expected to already be present in
+				/users/{@username}.jpg with the thumbnail at /users/thumbnails/user{@username}.thumbnail.jpg
+				on the server. If hosting under Apache HTTPD, re-write rules should be put in place 
+				to ensure that a replacement image is created when those files are not found.
+				 -->
+				<rdf:Description rdf:about="{$baseURI}{@username}-image">
+					<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+					<rdf:type rdf:resource="http://vitro.mannlib.cornell.edu/ns/vitro/public#File"/>
+					<vitro-public:downloadLocation rdf:resource="{$baseURI}{@username}-imageDownload"/>
+					<vitro-public:thumbnailImage rdf:resource="{$baseURI}{@username}-imageThumbnail"/>
+					<vitro-public:filename>{@username}.jpg</vitro-public:filename>
+					<vitro-public:mimeType>image/jpg</vitro-public:mimeType>
+                </rdf:Description>
+                <rdf:Description rdf:about="{$baseURI}{@username}-imageDownload">
+                    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+                    <rdf:type rdf:resource="http://vitro.mannlib.cornell.edu/ns/vitro/public#FileByteStream"/>
+                    <vitro-public:directDownloadUrl>    </vitro-public:directDownloadUrl>
+                </rdf:Description>
+                <rdf:Description rdf:about="{$baseURI}{@username}-imageThumbnail">
+				    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+				    <rdf:type rdf:resource="http://vitro.mannlib.cornell.edu/ns/vitro/public#File"/>
+				    <vitro-public:downloadLocation rdf:resource="{$baseURI}{@username}-imageThumbnailDownload"/>
+				    <vitro-public:filename>{@username}.thumbnail.jpg</vitro-public:filename>
+				    <vitro-public:mimeType>image/jpeg</vitro-public:mimeType>
+				 </rdf:Description>
+                 <rdf:Description rdf:about="{$baseURI}{@username}-imageThumbnailDownload">
+				    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+				    <rdf:type rdf:resource="http://vitro.mannlib.cornell.edu/ns/vitro/public#FileByteStream"/>
+				    <vitro-public:directDownloadUrl>/users/thumbnails/{@username}.thumbnail.jpg</vitro-public:directDownloadUrl>
+				 </rdf:Description>
+                
+             				
+                <xsl:apply-templates select="api:records/api:record[1]" mode="objectEntities" /> 
+                <xsl:apply-templates select="api:organisation-defined-data" mode="objectEntities" />
+				
+			</rdf:RDF>
+        </xsl:if>
 	</xsl:template>
 	<xsl:template match="/svo:object/api:object[@category='publication']">
 		<rdf:RDF xmlns:owlPlus='http://www.w3.org/2006/12/owl2-xml#'
@@ -176,63 +224,97 @@
             
 		</rdf:RDF>
 	</xsl:template>
-	<xsl:template match="/svo:relationship/api:relationship[@type-id!=8]">
-		<rdf:RDF xmlns:owlPlus='http://www.w3.org/2006/12/owl2-xml#'
-			xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:skos='http://www.w3.org/2008/05/skos#'
-			xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' xmlns:owl='http://www.w3.org/2002/07/owl#'
-			xmlns:vocab='http://purl.org/vocab/vann/' xmlns:swvocab='http://www.w3.org/2003/06/sw-vocab-status/ns#'
-			xmlns:dc='http://purl.org/dc/elements/1.1/' xmlns:vitro='http://vitro.mannlib.cornell.edu/ns/vitro/0.7#'
-			xmlns:core='http://vivoweb.org/ontology/core#' xmlns:foaf='http://xmlns.com/foaf/0.1/'
-			xmlns:score='http://vivoweb.org/ontology/score#' xmlns:xs='http://www.w3.org/2001/XMLSchema#'
-			xmlns:svo='http://www.symplectic.co.uk/vivo/' xmlns:api='http://www.symplectic.co.uk/publications/api'
-			xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'>
-		     <!--  create the link -->
-		    <rdf:Description rdf:about="{$baseURI}authorship{@id}">
-    			<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-				<ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
-				<svo:relationship-type><xsl:value-of select="@type-id" /></svo:relationship-type>
-			</rdf:Description>			
-			
-		</rdf:RDF>
-	</xsl:template>
-
-	<xsl:template match="/svo:relationship/api:relationship[@type-id=8]">
-	   <!--  author relationship -->
-		<rdf:RDF xmlns:owlPlus='http://www.w3.org/2006/12/owl2-xml#'
-			xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:skos='http://www.w3.org/2008/05/skos#'
-			xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' xmlns:owl='http://www.w3.org/2002/07/owl#'
-			xmlns:vocab='http://purl.org/vocab/vann/' xmlns:swvocab='http://www.w3.org/2003/06/sw-vocab-status/ns#'
-			xmlns:dc='http://purl.org/dc/elements/1.1/' xmlns:vitro='http://vitro.mannlib.cornell.edu/ns/vitro/0.7#'
-			xmlns:core='http://vivoweb.org/ontology/core#' xmlns:foaf='http://xmlns.com/foaf/0.1/'
-			xmlns:score='http://vivoweb.org/ontology/score#' xmlns:xs='http://www.w3.org/2001/XMLSchema#'
-			xmlns:svo='http://www.symplectic.co.uk/vivo/' xmlns:api='http://www.symplectic.co.uk/publications/api'
-			xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'>
-			
-			<xsl:variable name="publicationID" select="api:related[@direction='from']/api:object/@id" />
-			<xsl:variable name="userID" select="api:related[@direction='to']/api:object/@id" />
-
-            <!--  add the authorship to the person -->
-		    <rdf:Description rdf:about="{$baseURI}user{$userID}">
-				<rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person" />
-				<core:authorInAuthorship rdf:resource="{$baseURI}authorship{@id}"/>
-		    </rdf:Description>
-
-			<!--  add the author to the publication -->
-		    <rdf:Description rdf:about="{$baseURI}publication{$publicationID}">
-               <rdf:type rdf:resource="http://vivoweb.org/ontology/core#InformationResource"/>
-               <core:informationResourceInAuthorship rdf:resource="{$baseURI}authorship{@id}"/>
-    		</rdf:Description>
-
-		     <!--  create the link -->
-		    <rdf:Description rdf:about="{$baseURI}authorship{@id}">
-    			<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-    			<rdf:type rdf:resource="http://vivoweb.org/ontology/core#Relationship"/>
-    			<rdf:type rdf:resource="http://vivoweb.org/ontology/core#Authorship"/>
-				<ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
-    			<core:linkedAuthor rdf:resource="{$baseURI}user{$userID}"/>
-    			<core:linkedInformationResource rdf:resource="{$baseURI}publication{$publicationID}"/>
-			</rdf:Description>			
-		</rdf:RDF>
+	<xsl:template match="/svo:relationship/api:relationship">
+	   <xsl:choose>
+		   <xsl:when test="@type-id=8" >
+		   <!--  author relationship -->
+				<rdf:RDF
+                    xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
+                    xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' 
+                    xmlns:core='http://vivoweb.org/ontology/core#' 
+                    xmlns:api='http://www.symplectic.co.uk/publications/api'
+                    xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'
+                    >
+					
+					<xsl:variable name="publicationID" select="api:related[@direction='from']/api:object/@id" />
+					<xsl:variable name="userID" select="api:related[@direction='to']/api:object/@username" />
+		
+		            <!--  add the authorship to the person -->
+				    <rdf:Description rdf:about="{$baseURI}{$userID}">
+						<rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person" />
+						<core:authorInAuthorship rdf:resource="{$baseURI}authorship{@id}"/>
+				    </rdf:Description>
+		
+					<!--  add the author to the publication -->
+				    <rdf:Description rdf:about="{$baseURI}publication{$publicationID}">
+		               <rdf:type rdf:resource="http://vivoweb.org/ontology/core#InformationResource"/>
+		               <core:informationResourceInAuthorship rdf:resource="{$baseURI}authorship{@id}"/>
+		    		</rdf:Description>
+		
+				     <!--  create the link -->
+				    <rdf:Description rdf:about="{$baseURI}authorship{@id}">
+		    			<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+		    			<rdf:type rdf:resource="http://vivoweb.org/ontology/core#Relationship"/>
+		    			<rdf:type rdf:resource="http://vivoweb.org/ontology/core#Authorship"/>
+						<ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
+		    			<core:linkedAuthor rdf:resource="{$baseURI}{$userID}"/>
+		    			<core:linkedInformationResource rdf:resource="{$baseURI}publication{$publicationID}"/>
+					</rdf:Description>			
+				</rdf:RDF>
+	       </xsl:when>
+           <xsl:when test="@type-id=9" >
+           <!--  editor relationship -->
+                <rdf:RDF 
+                    xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
+                    xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' 
+                    xmlns:core='http://vivoweb.org/ontology/core#' 
+                    xmlns:api='http://www.symplectic.co.uk/publications/api'
+                    xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'
+                    >
+                    
+                    <xsl:variable name="publicationID" select="api:related[@direction='from']/api:object/@id" />
+                    <xsl:variable name="userID" select="api:related[@direction='to']/api:object/@username" />
+        
+        
+                    <!--  add the author to the publication -->
+                    <rdf:Description rdf:about="{$baseURI}publication{$publicationID}">
+                        <ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
+                       <rdf:type rdf:resource="http://purl.org/ontology/bibo/Document"/>
+                       <core:editor rdf:resource="{$baseURI}{$userID}"/>
+                    </rdf:Description>
+        
+                </rdf:RDF>
+           </xsl:when>
+           <xsl:when test="@type-id=17" >
+             <!--  (Grant) Funder of (User) -->
+           </xsl:when>
+           <xsl:when test="@type-id=23" >
+              <!-- Professional Activity to User -->
+           </xsl:when>
+           <xsl:when test="@type-id=43" >
+              <!-- (User) Primary investigator (Grant) -->
+           </xsl:when>
+           <xsl:when test="@type-id=44" >
+              <!-- (User) Secondary investigator (Grant) -->
+           </xsl:when>
+	       <xsl:otherwise>
+		        <rdf:RDF 
+                    xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
+                    xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' 
+                    xmlns:core='http://vivoweb.org/ontology/core#' 
+                    xmlns:api='http://www.symplectic.co.uk/publications/api'
+                    xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'
+                    >
+		             <!--  create the link -->
+		            <rdf:Description rdf:about="{$baseURI}authorship{@id}">
+		                <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+		                <ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
+		                <svo:relationship-type><xsl:value-of select="@type-id" /></svo:relationship-type>
+		            </rdf:Description>          
+		            
+		        </rdf:RDF>
+	       </xsl:otherwise>
+        </xsl:choose>
 	</xsl:template>
 
 
@@ -260,6 +342,14 @@
 			<xsl:value-of select="." />
 		</svo:StaffCategory>
 	</xsl:template>
+
+    <xsl:template
+        match="api:organisation-defined-data[@field-name='Telephone Number']">
+        <core:phoneNumber>
+            <xsl:value-of select="." />
+        </core:phoneNumber>
+    </xsl:template>
+    
 
 
 	<!-- core publication metadata -->
@@ -1077,7 +1167,7 @@
                   <xsl:value-of select="api:text" />
             </rdfs:label>
             <!--  add properties to enable smushing -->
-            <svo:smush>commissioning-body:<xsl:value-of select="api:text" /></svo:smush>
+            <svo:smush>organization:<xsl:value-of select="api:text" /></svo:smush>
         </rdf:Description>
     </xsl:template>
 
@@ -1158,9 +1248,42 @@
                   <xsl:value-of select="api:text" />
             </rdfs:label>
             <!--  add properties to enable smushing -->
-            <svo:smush>distributors:<xsl:value-of select="api:text" /></svo:smush>
+            <svo:smush>organization:<xsl:value-of select="api:text" /></svo:smush>
         </rdf:Description>
     </xsl:template>
+    
+    
+    <!--  BU specific -->
+    <xsl:template
+        match="api:organisation-defined-data[@field-name='inc. Job Title']" mode="objectReferences">
+        <xsl:variable name="rid" select="ancestor::api:object/@username"/>
+        <bibo:distributor rdf:resource="{$baseURI}{$rid}-jobTitle"/>
+    </xsl:template>
+    <xsl:template
+        match="api:organisation-defined-data[@field-name='inc. Job Title']" mode="objectEntries">
+        <xsl:variable name="rid" select="ancestor::api:object/@username"/>
+        <rdf:Description rdf:about="{$baseURI}{$rid}-jobTitle">
+		    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+		    <rdf:type rdf:resource="http://vivoweb.org/ontology/core#Position"/>
+		    <core:positionForPerson rdf:resource="{$baseURI}{$rid}"/>
+		    <core:positionInOrganization rdf:resource="{$baseURI}BournmouthUniversity"/>
+            <rdfs:label>
+                  <xsl:value-of select="." />
+            </rdfs:label>
+            <!--  add properties to enable smushing -->
+            <svo:smush>jobtitle:<xsl:value-of select="." /></svo:smush>
+        </rdf:Description>        
+        <rdf:Description rdf:about="{$baseURI}BournmouthUniversity">
+		    <rdf:type rdf:resource="http://vivoweb.org/ontology/core#University"/>
+		    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+		    <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
+		    <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+		    <core:organizationForPosition rdf:resource="{$baseURI}{$rid}-jobTitle"/>
+		    <rdfs:label>Bournmouth University</rdfs:label>
+            <svo:smush>organization:Bournemouth University</svo:smush>
+        </rdf:Description>
+    </xsl:template>
+    
 
 
 

@@ -73,7 +73,7 @@
 		<dependency>
 			<groupId>org.vivoweb</groupId>
 			<artifactId>harvester</artifactId>
-			<version>1.3</version>
+			<version>1.3-symplectic</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-vfs</groupId>

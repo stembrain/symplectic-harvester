@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- 
    | Copyright (c) 2011 Ian Boston for Symplectic, relicensed under the AGPL license in repository https://github.com/ieb/symplectic-harvester
    | Please see the LICENSE file for more details
@@ -26,7 +26,8 @@
 				xmlns:score='http://vivoweb.org/ontology/score#' xmlns:xs='http://www.w3.org/2001/XMLSchema#'
 				xmlns:svo='http://www.symplectic.co.uk/vivo/' xmlns:api='http://www.symplectic.co.uk/publications/api'
 				xmlns:vitro-public="http://vitro.mannlib.cornell.edu/ns/vitro/public#"
-				xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'>
+				xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'
+				xmlns:bibo='http://purl.org/ontology/bibo/'>
 				
 				<!--  Main user object -->
 			    <rdf:Description rdf:about="{$baseURI}{@username}">
@@ -36,8 +37,14 @@
 					</score:email>
 					<rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person" />
 					<rdfs:label>
-						<xsl:value-of select="api:last-name" />, <xsl:value-of select="api:first-name" />
+						<xsl:value-of select="api:title" /><xsl:text> </xsl:text><xsl:value-of select="api:last-name" />, <xsl:value-of select="api:first-name" />
 					</rdfs:label>
+					<core:preferredTitle>
+					   <xsl:value-of select="api:title" />
+                    </core:preferredTitle>
+                    <core:primaryEmail>
+                       <xsl:value-of select="api:email-address" />
+                    </core:primaryEmail>
 					<foaf:lastName>
 						<xsl:value-of select="api:last-name" />
 					</foaf:lastName>
@@ -73,7 +80,7 @@
 					<rdf:type rdf:resource="http://vitro.mannlib.cornell.edu/ns/vitro/public#File"/>
 					<vitro-public:downloadLocation rdf:resource="{$baseURI}{@username}-imageDownload"/>
 					<vitro-public:thumbnailImage rdf:resource="{$baseURI}{@username}-imageThumbnail"/>
-					<vitro-public:filename>{@username}.jpg</vitro-public:filename>
+					<vitro-public:filename><xsl:value-of select="@username" />.jpg</vitro-public:filename>
 					<vitro-public:mimeType>image/jpg</vitro-public:mimeType>
                 </rdf:Description>
                 <rdf:Description rdf:about="{$baseURI}{@username}-imageDownload">
@@ -85,19 +92,16 @@
 				    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
 				    <rdf:type rdf:resource="http://vitro.mannlib.cornell.edu/ns/vitro/public#File"/>
 				    <vitro-public:downloadLocation rdf:resource="{$baseURI}{@username}-imageThumbnailDownload"/>
-				    <vitro-public:filename>{@username}.thumbnail.jpg</vitro-public:filename>
+				    <vitro-public:filename><xsl:value-of select="@username" />.thumbnail.jpg</vitro-public:filename>
 				    <vitro-public:mimeType>image/jpeg</vitro-public:mimeType>
 				 </rdf:Description>
                  <rdf:Description rdf:about="{$baseURI}{@username}-imageThumbnailDownload">
 				    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
 				    <rdf:type rdf:resource="http://vitro.mannlib.cornell.edu/ns/vitro/public#FileByteStream"/>
-				    <vitro-public:directDownloadUrl>/users/thumbnails/{@username}.thumbnail.jpg</vitro-public:directDownloadUrl>
+				    <vitro-public:directDownloadUrl>/users/thumbnails/<xsl:value-of select="@username" />.thumbnail.jpg</vitro-public:directDownloadUrl>
 				 </rdf:Description>
-                
-             				
-                <xsl:apply-templates select="api:records/api:record[1]" mode="objectEntities" /> 
-                <xsl:apply-templates select="api:organisation-defined-data" mode="objectEntities" />
-				
+                <xsl:apply-templates select="api:records/api:record[1]" mode="objectEntries" /> 
+                <xsl:apply-templates select="api:organisation-defined-data" mode="objectEntries" />
 			</rdf:RDF>
         </xsl:if>
 	</xsl:template>
@@ -1255,17 +1259,19 @@
     
     <!--  BU specific -->
     <xsl:template
-        match="api:organisation-defined-data[@field-name='inc. Job Title']" mode="objectReferences">
-        <xsl:variable name="rid" select="ancestor::api:object/@username"/>
+        match="api:organisation-defined-data[@field-name='Job Title']" mode="objectReferences">
+        <xsl:variable name="rid" select="ancestor::api:object/@id"/>
         <bibo:distributor rdf:resource="{$baseURI}{$rid}-jobTitle"/>
     </xsl:template>
     <xsl:template
-        match="api:organisation-defined-data[@field-name='inc. Job Title']" mode="objectEntries">
-        <xsl:variable name="rid" select="ancestor::api:object/@username"/>
+        match="api:organisation-defined-data[@field-name='Job Title']" mode="objectEntries">
+        <xsl:variable name="rid" select="ancestor::api:object/@id"/>
+        <xsl:variable name="username" select="ancestor::api:object/@username"/>
+        
         <rdf:Description rdf:about="{$baseURI}{$rid}-jobTitle">
 		    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
 		    <rdf:type rdf:resource="http://vivoweb.org/ontology/core#Position"/>
-		    <core:positionForPerson rdf:resource="{$baseURI}{$rid}"/>
+		    <core:positionForPerson rdf:resource="{$baseURI}{$username}"/>
 		    <core:positionInOrganization rdf:resource="{$baseURI}BournmouthUniversity"/>
             <rdfs:label>
                   <xsl:value-of select="." />

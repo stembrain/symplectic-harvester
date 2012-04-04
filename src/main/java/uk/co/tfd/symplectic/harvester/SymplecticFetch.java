@@ -206,8 +206,6 @@ public class SymplecticFetch {
                                 worklist.put(key, task);
                                 executorService.execute(task);
                                 i++;
-                                // consume any pending tasks
-                                consumeTasks(worklist, progress);
                                 // dont overfill the queue
         		        while ( worklist.size() > threadPoolSize*2 ) {
                                     consumeTasks(worklist, progress);

@@ -181,8 +181,11 @@ public class SymplecticFetch {
 		        if ( next == null ) {
 		            int startingWorklistSize = worklist.size();
                             while ( worklist.size() > 0 && worklist.size() >= startingWorklistSize ) {
+                                try {
+                                    Thread.sleep(500);
+                                } catch (InterruptedException e) {
+                                }
                                 consumeTasks(worklist, progress);
-                                Thread.yield();
                             }
                             if (!progress.hasPending() && worklist.size() == 0) {
                                 break; // there are none left to come, the workers are empty, and so is pending
@@ -208,8 +211,11 @@ public class SymplecticFetch {
                                 i++;
                                 // dont overfill the queue
         		        while ( worklist.size() > threadPoolSize*2 ) {
+        		            try {
+        		                 Thread.sleep(500);
+                                    } catch (InterruptedException e) {
+                                    }
                                     consumeTasks(worklist, progress);
-                                    Thread.yield();
         		        }
 		        }
 		}

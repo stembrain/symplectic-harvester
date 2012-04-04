@@ -31,12 +31,13 @@
 			CREATE TABLE  `symplectic_fetch` (
                  `id` varchar(32) NOT NULL,
                  `url` varchar(780) NOT NULL,
-                 `lastupdate` varchar(64) NOT NULL,
+                 `lastupdate` timestamp NOT NULL,
                  `loadstate` INTEGER NOT NULL,
                   `loader_type` varchar(32) NOT NULL,
                   PRIMARY KEY  (`id`),
                   KEY `k_lastupdate`  (`lastupdate`),
-                  KEY `k_loadstate` (`loadstate`)
+                  KEY `k_loadstate` (`loadstate`),
+                  KEY `k_url` (`url`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
 			</ddl>
 		</createdb>

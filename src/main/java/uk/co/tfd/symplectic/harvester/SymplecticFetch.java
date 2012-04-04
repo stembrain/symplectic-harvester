@@ -179,11 +179,12 @@ public class SymplecticFetch {
 		while ( i < maxUrlFetch) {
 			Entry<String, AtomEntryLoader> next = progress.next();
 		        if ( next == null ) {
-                            while ( worklist.size() > 0 ) {
+		            int startingWorklistSize = worklist.size();
+                            while ( worklist.size() > 0 && worklist.size() >= startingWorklistSize ) {
                                 consumeTasks(worklist);
                                 Thread.yield();
                             }
-                            if (!progress.hasPending()) {
+                            if (!progress.hasPending() && worklist.size() == 0) {
                                 break; // there are none left to come, the workers are empty, and so is pending
                             }
 		        } else {	                        

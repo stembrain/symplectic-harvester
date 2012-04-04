@@ -16,8 +16,11 @@
 			id from symplectic_fetch where loadstate = ? order by lastupdate asc
 		</select-on-status-sql>
 		<select-on-status-sql>select url, lastupdate, loadstate, loader_type,
-			id from symplectic_fetch where loadstate = ? lastupdate order by
+			id from symplectic_fetch where loadstate = ? order by
 			lastupdate asc</select-on-status-sql>
+		<select-on-status-limit1-sql>select url, lastupdate, loadstate, loader_type,
+			id from symplectic_fetch where loadstate = ? order by
+			lastupdate asc limit 1 </select-on-status-limit1-sql>
 		<insert-url-state-toload-sql>update symplectic_fetch set url = ?,
 			lastupdate = ?, loadstate = ?, loader_type = ? where id = ?
 		</insert-url-state-toload-sql>
@@ -60,6 +63,9 @@
 		<select-on-status-sql>select url, lastupdate, loadstate, loader_type,
 			id from symplectic_fetch where loadstate = ? lastupdate order by
 			lastupdate asc</select-on-status-sql>
+		<select-on-status-limit1-sql>select url, lastupdate, loadstate, loader_type,
+			id from symplectic_fetch where loadstate = ? lastupdate order by
+			lastupdate asc</select-on-status-limit1-sql>
 		<insert-url-state-toload-sql>update symplectic_fetch set url = ?,
 			lastupdate = ?, loadstate = ?, loader_type = ? where id = ?
 		</insert-url-state-toload-sql>

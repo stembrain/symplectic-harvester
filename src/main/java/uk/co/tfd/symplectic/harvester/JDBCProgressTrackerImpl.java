@@ -41,6 +41,7 @@ public class JDBCProgressTrackerImpl implements ProgressTracker {
     private static final String INSERT_URL_STATE_SQL = "insert-url-state-sql";
     private static final String COUNT_STATUS_SQL = "count-status-sql";
     private static final String SELECT_ON_STATUS_SQL = "select-on-status-sql";
+    private static final String SELECT_ON_STATUS_SQL_LIMIT1 = "select-on-status-limit1-sql";
     private static final String INSERT_URL_STATE_TOLOAD_SQL = "insert-url-state-toload-sql";
     private static final String UPDATE_URL_STATE_TOLOAD_SQL = "update-url-state-toload-sql";
     private static final String SELECT_URL_SQL = "select-url";
@@ -216,33 +217,41 @@ public class JDBCProgressTrackerImpl implements ProgressTracker {
         if (connection == null) {
             return false;
         }
-        synchronized (dblock) {
-            ResultSet rs = null;
-            try {
-                PreparedStatement checkLoaded = getPreparedStatement(SELECT_URL_SQL);
-                checkLoaded.clearParameters();
-                checkLoaded.setString(1, hash(url));
-                rs = checkLoaded.executeQuery();
-                if (rs.next()) {
-                    // url, lastupdate, loadstate, loader_type, id
-                    int loadState = rs.getInt(3);
-                    Timestamp lastUpdate = rs.getTimestamp(2);
-                    if (lastUpdate.before(reloadBefore) || loadState == PENDING) {
-                        return false;
-                    }
-                    return true;
-                }
-            } catch (SQLException e) {
-                LOGGER.error(e.getMessage(), e);
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
-            } finally {
+        long start = System.currentTimeMillis();
+        try {
+            synchronized (dblock) {
+                ResultSet rs = null;
                 try {
-                    rs.close();
-                } catch (Exception ex) {
+                    PreparedStatement checkLoaded = getPreparedStatement(SELECT_URL_SQL);
+                    checkLoaded.clearParameters();
+                    checkLoaded.setString(1, hash(url));
+                    rs = checkLoaded.executeQuery();
+                    if (rs.next()) {
+                        // url, lastupdate, loadstate, loader_type, id
+                        int loadState = rs.getInt(3);
+                        Timestamp lastUpdate = rs.getTimestamp(2);
+                        if (lastUpdate.before(reloadBefore) || loadState == PENDING) {
+                            return false;
+                        }
+                        return true;
+                    }
+                } catch (SQLException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } finally {
+                    try {
+                        rs.close();
+                    } catch (Exception ex) {
+                    }
                 }
+                return false;
             }
-            return false;
+        } finally {
+            long end = System.currentTimeMillis() - start;
+            if (end > 100) {
+                LOGGER.info("Slow Query isLoaded {}ms ", end);
+            }
         }
     }
 
@@ -250,26 +259,34 @@ public class JDBCProgressTrackerImpl implements ProgressTracker {
         if (connection == null) {
             return;
         }
-        synchronized (dblock) {
-            ResultSet rs = null;
-            try {
-                PreparedStatement selectOnStatus = getPreparedStatement(SELECT_ON_STATUS_SQL);
-                selectOnStatus.clearParameters();
-                selectOnStatus.setInt(1, LOADING);
-                rs = selectOnStatus.executeQuery();
-                while (rs.next()) {
-                    String url = rs.getString(1);
-                    mark(url, PENDING);
-                }
-            } catch (SQLException e) {
-                LOGGER.error(e.getMessage(), e);
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
-            } finally {
+        long start = System.currentTimeMillis();
+        try {
+            synchronized (dblock) {
+                ResultSet rs = null;
                 try {
-                    rs.close();
-                } catch (Exception ex) {
+                    PreparedStatement selectOnStatus = getPreparedStatement(SELECT_ON_STATUS_SQL);
+                    selectOnStatus.clearParameters();
+                    selectOnStatus.setInt(1, LOADING);
+                    rs = selectOnStatus.executeQuery();
+                    while (rs.next()) {
+                        String url = rs.getString(1);
+                        mark(url, PENDING);
+                    }
+                } catch (SQLException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } finally {
+                    try {
+                        rs.close();
+                    } catch (Exception ex) {
+                    }
                 }
+            }
+        } finally {
+            long end = System.currentTimeMillis() - start;
+            if (end > 100) {
+                LOGGER.info("Slow Query clearLoading {}ms ", end);
             }
         }
     }
@@ -279,35 +296,44 @@ public class JDBCProgressTrackerImpl implements ProgressTracker {
         if (connection == null) {
             return;
         }
-        synchronized (dblock) {
-            if ((updateLists && (loader instanceof AtomEntryLoader)) || !isLoaded(url)) {
-                try {
+        long start = System.currentTimeMillis();
+        try {
+            synchronized (dblock) {
+                if ((updateLists && (loader instanceof AtomEntryLoader)) || !isLoaded(url)) {
                     try {
-                        PreparedStatement updateUrlStateToLoad = getPreparedStatement(UPDATE_URL_STATE_TOLOAD_SQL);
-                        updateUrlStateToLoad.clearParameters();
-                        updateUrlStateToLoad.setString(1, url);
-                        updateUrlStateToLoad.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
-                        updateUrlStateToLoad.setInt(3, PENDING);
-                        updateUrlStateToLoad.setString(4, loader.getType());
-                        updateUrlStateToLoad.setString(5, hash(url));
-                        updateUrlStateToLoad.executeUpdate();
+                        try {
+                            PreparedStatement updateUrlStateToLoad = getPreparedStatement(UPDATE_URL_STATE_TOLOAD_SQL);
+                            updateUrlStateToLoad.clearParameters();
+                            updateUrlStateToLoad.setString(1, url);
+                            updateUrlStateToLoad.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                            updateUrlStateToLoad.setInt(3, PENDING);
+                            updateUrlStateToLoad.setString(4, loader.getType());
+                            updateUrlStateToLoad.setString(5, hash(url));
+                            updateUrlStateToLoad.executeUpdate();
+                        } catch (SQLException e) {
+                            PreparedStatement insertUrlStateToLoad = getPreparedStatement(INSERT_URL_STATE_TOLOAD_SQL);
+                            insertUrlStateToLoad.clearParameters();
+                            insertUrlStateToLoad.setString(1, url);
+                            insertUrlStateToLoad.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                            insertUrlStateToLoad.setInt(3, PENDING);
+                            insertUrlStateToLoad.setString(4, loader.getType());
+                            insertUrlStateToLoad.setString(5, hash(url));
+                            insertUrlStateToLoad.executeUpdate();
+                        }
+                    } catch (IOException e) {
+                        LOGGER.error(e.getMessage(), e);
                     } catch (SQLException e) {
-                        PreparedStatement insertUrlStateToLoad = getPreparedStatement(INSERT_URL_STATE_TOLOAD_SQL);
-                        insertUrlStateToLoad.clearParameters();
-                        insertUrlStateToLoad.setString(1, url);
-                        insertUrlStateToLoad.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
-                        insertUrlStateToLoad.setInt(3, PENDING);
-                        insertUrlStateToLoad.setString(4, loader.getType());
-                        insertUrlStateToLoad.setString(5, hash(url));
-                        insertUrlStateToLoad.executeUpdate();
+                        LOGGER.error(e.getMessage(), e);
                     }
-                } catch (IOException e) {
-                    LOGGER.error(e.getMessage(), e);
-                } catch (SQLException e) {
-                    LOGGER.error(e.getMessage(), e);
                 }
             }
+        } finally {
+            long end = System.currentTimeMillis() - start;
+            if (end > 100) {
+                LOGGER.info("Slow Query toLoad {}ms ", end);
+            }
         }
+
     }
 
     @Override
@@ -315,39 +341,48 @@ public class JDBCProgressTrackerImpl implements ProgressTracker {
         if (connection == null) {
             return false;
         }
-        synchronized (dblock) {
-            ResultSet rs = null;
-            try {
-                PreparedStatement countStatus = getPreparedStatement(COUNT_STATUS_SQL);
-                countStatus.clearParameters();
-                countStatus.setInt(1, PENDING);
-                rs = countStatus.executeQuery();
-                int n = 0;
-                if (rs.next()) {
-                    n = rs.getInt(1);
-                }
-                if (n > 0)
-                    return true;
-                countStatus = getPreparedStatement(COUNT_STATUS_SQL);
-                countStatus.clearParameters();
-                countStatus.setInt(1, LOADING);
-                rs = countStatus.executeQuery();
-                if (rs.next()) {
-                    n = n + rs.getInt(1);
-                }
-                return (n > 0);
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
-            } catch (SQLException e) {
-                LOGGER.error(e.getMessage(), e);
-            } finally {
+        long start = System.currentTimeMillis();
+        try {
+            synchronized (dblock) {
+                ResultSet rs = null;
                 try {
-                    rs.close();
-                } catch (Exception ex) {
+                    PreparedStatement countStatus = getPreparedStatement(COUNT_STATUS_SQL);
+                    countStatus.clearParameters();
+                    countStatus.setInt(1, PENDING);
+                    rs = countStatus.executeQuery();
+                    int n = 0;
+                    if (rs.next()) {
+                        n = rs.getInt(1);
+                    }
+                    if (n > 0)
+                        return true;
+                    countStatus = getPreparedStatement(COUNT_STATUS_SQL);
+                    countStatus.clearParameters();
+                    countStatus.setInt(1, LOADING);
+                    rs = countStatus.executeQuery();
+                    if (rs.next()) {
+                        n = n + rs.getInt(1);
+                    }
+                    return (n > 0);
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } catch (SQLException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } finally {
+                    try {
+                        rs.close();
+                    } catch (Exception ex) {
+                    }
                 }
+                return false;
             }
-            return false;
+        } finally {
+            long end = System.currentTimeMillis() - start;
+            if (end > 100) {
+                LOGGER.info("Slow Query hasPending {}ms ", end);
+            }
         }
+
     }
 
     @Override
@@ -355,62 +390,80 @@ public class JDBCProgressTrackerImpl implements ProgressTracker {
         if (connection == null) {
             return 0;
         }
-        synchronized (dblock) {
-            ResultSet rs = null;
-            try {
-                PreparedStatement countStatus = getPreparedStatement(COUNT_STATUS_SQL);
-                countStatus.clearParameters();
-                countStatus.setInt(1, PENDING);
-                rs = countStatus.executeQuery();
-                int n = 0;
-                if (rs.next()) {
-                    n = rs.getInt(1);
-                }
-                countStatus = getPreparedStatement(COUNT_STATUS_SQL);
-                countStatus.clearParameters();
-                countStatus.setInt(1, LOADING);
-                rs = countStatus.executeQuery();
-                if (rs.next()) {
-                    n = n + rs.getInt(1);
-                }
-                return n;
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
-            } catch (SQLException e) {
-                LOGGER.error(e.getMessage(), e);
-            } finally {
+        long start = System.currentTimeMillis();
+        try {
+            synchronized (dblock) {
+                ResultSet rs = null;
                 try {
-                    rs.close();
-                } catch (Exception ex) {
+                    PreparedStatement countStatus = getPreparedStatement(COUNT_STATUS_SQL);
+                    countStatus.clearParameters();
+                    countStatus.setInt(1, PENDING);
+                    rs = countStatus.executeQuery();
+                    int n = 0;
+                    if (rs.next()) {
+                        n = rs.getInt(1);
+                    }
+                    countStatus = getPreparedStatement(COUNT_STATUS_SQL);
+                    countStatus.clearParameters();
+                    countStatus.setInt(1, LOADING);
+                    rs = countStatus.executeQuery();
+                    if (rs.next()) {
+                        n = n + rs.getInt(1);
+                    }
+                    return n;
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } catch (SQLException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } finally {
+                    try {
+                        rs.close();
+                    } catch (Exception ex) {
+                    }
                 }
+                return 0;
             }
-            return 0;
+        } finally {
+            long end = System.currentTimeMillis() - start;
+            if (end > 100) {
+                LOGGER.info("Slow Query pending {}ms ", end);
+            }
         }
+
     }
 
     private int loaded() {
-        synchronized (dblock) {
-            ResultSet rs = null;
-            try {
-                PreparedStatement countStatus = getPreparedStatement(COUNT_STATUS_SQL);
-                countStatus.clearParameters();
-                countStatus.setInt(1, OK);
-                rs = countStatus.executeQuery();
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
-            } catch (SQLException e) {
-                LOGGER.error(e.getMessage(), e);
-            } finally {
+        long start = System.currentTimeMillis();
+        try {
+            synchronized (dblock) {
+                ResultSet rs = null;
                 try {
-                    rs.close();
-                } catch (Exception ex) {
+                    PreparedStatement countStatus = getPreparedStatement(COUNT_STATUS_SQL);
+                    countStatus.clearParameters();
+                    countStatus.setInt(1, OK);
+                    rs = countStatus.executeQuery();
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } catch (SQLException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } finally {
+                    try {
+                        rs.close();
+                    } catch (Exception ex) {
+                    }
                 }
+                return 0;
             }
-            return 0;
+        } finally {
+            long end = System.currentTimeMillis() - start;
+            if (end > 100) {
+                LOGGER.info("Slow Query loaded {}ms ", end);
+            }
         }
+
     }
 
     @Override
@@ -418,39 +471,48 @@ public class JDBCProgressTrackerImpl implements ProgressTracker {
         if (connection == null) {
             return null;
         }
-        synchronized (dblock) {
-            ResultSet rs = null;
-            try {
-                PreparedStatement selectOnStatus = getPreparedStatement(SELECT_ON_STATUS_SQL);
-                selectOnStatus.clearParameters();
-                selectOnStatus.setInt(1, PENDING);
-                rs = selectOnStatus.executeQuery();
-                if (rs.next()) {
-                    String url = rs.getString(1);
-                    String type = rs.getString(4);
-                    mark(url, LOADING);
-                    if ("relationship".equals(type)) {
-                        return new MapEntry(url, new APIRelationship(recordHandler, this, limitListPages, objectTypes));
-                    } else if ("relationships".equals(type)) {
-                        return new MapEntry(url, new APIRelationships(recordHandler, this, limitListPages, objectTypes));
-                    } else if (type.endsWith("s")) {
-                        return new MapEntry(url, new APIObjects(recordHandler, type, this, limitListPages, objectTypes));
-                    } else {
-                        return new MapEntry(url, new APIObject(recordHandler, type, this, limitListPages, objectTypes));
+        long start = System.currentTimeMillis();
+        try {
+            synchronized (dblock) {
+                ResultSet rs = null;
+                try {
+                    PreparedStatement selectOnStatus = getPreparedStatement(SELECT_ON_STATUS_SQL_LIMIT1);
+                    selectOnStatus.clearParameters();
+                    selectOnStatus.setInt(1, PENDING);
+                    rs = selectOnStatus.executeQuery();
+                    if (rs.next()) {
+                        String url = rs.getString(1);
+                        String type = rs.getString(4);
+                        mark(url, LOADING);
+                        if ("relationship".equals(type)) {
+                            return new MapEntry(url, new APIRelationship(recordHandler, this, limitListPages, objectTypes));
+                        } else if ("relationships".equals(type)) {
+                            return new MapEntry(url, new APIRelationships(recordHandler, this, limitListPages, objectTypes));
+                        } else if (type.endsWith("s")) {
+                            return new MapEntry(url, new APIObjects(recordHandler, type, this, limitListPages, objectTypes));
+                        } else {
+                            return new MapEntry(url, new APIObject(recordHandler, type, this, limitListPages, objectTypes));
+                        }
+                    }
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } catch (SQLException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } finally {
+                    try {
+                        rs.close();
+                    } catch (Exception ex) {
                     }
                 }
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
-            } catch (SQLException e) {
-                LOGGER.error(e.getMessage(), e);
-            } finally {
-                try {
-                    rs.close();
-                } catch (Exception ex) {
-                }
+                return null;
             }
-            return null;
+        } finally {
+            long end = System.currentTimeMillis() - start;
+            if (end > 100) {
+                LOGGER.info("Slow Query next {}ms ", end);
+            }
         }
+
     }
 
     @Override
@@ -523,31 +585,40 @@ public class JDBCProgressTrackerImpl implements ProgressTracker {
         if (connection == null) {
             return;
         }
-        synchronized (dblock) {
-            try {
+        long start = System.currentTimeMillis();
+        try {
+            synchronized (dblock) {
                 try {
-                    PreparedStatement insertUrlState = getPreparedStatement(INSERT_URL_STATE_SQL);
-                    insertUrlState.clearParameters();
-                    insertUrlState.setString(1, url);
-                    insertUrlState.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
-                    insertUrlState.setInt(3, code);
-                    insertUrlState.setString(4, hash(url));
-                    insertUrlState.executeUpdate();
+                    try {
+                        PreparedStatement insertUrlState = getPreparedStatement(INSERT_URL_STATE_SQL);
+                        insertUrlState.clearParameters();
+                        insertUrlState.setString(1, url);
+                        insertUrlState.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                        insertUrlState.setInt(3, code);
+                        insertUrlState.setString(4, hash(url));
+                        insertUrlState.executeUpdate();
+                    } catch (SQLException e) {
+                        PreparedStatement updateUrlState = getPreparedStatement(UPDATE_URL_STATE_SQL);
+                        updateUrlState.clearParameters();
+                        updateUrlState.setString(1, url);
+                        updateUrlState.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                        updateUrlState.setInt(3, code);
+                        updateUrlState.setString(4, hash(url));
+                        updateUrlState.executeUpdate();
+                    }
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
                 } catch (SQLException e) {
-                    PreparedStatement updateUrlState = getPreparedStatement(UPDATE_URL_STATE_SQL);
-                    updateUrlState.clearParameters();
-                    updateUrlState.setString(1, url);
-                    updateUrlState.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
-                    updateUrlState.setInt(3, code);
-                    updateUrlState.setString(4, hash(url));
-                    updateUrlState.executeUpdate();
+                    LOGGER.error(e.getMessage(), e);
                 }
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
-            } catch (SQLException e) {
-                LOGGER.error(e.getMessage(), e);
+            }
+        } finally {
+            long end = System.currentTimeMillis() - start;
+            if (end > 100) {
+                LOGGER.info("Slow Query mark {}ms ", end);
             }
         }
+
     }
 
 }

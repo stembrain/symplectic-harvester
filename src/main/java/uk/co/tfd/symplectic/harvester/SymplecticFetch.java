@@ -178,6 +178,7 @@ public class SymplecticFetch {
 		final ConcurrentHashMap<String, FutureTask<String>> worklist = new ConcurrentHashMap<String, FutureTask<String>>();
 		while ( i < maxUrlFetch) {
 			Entry<String, AtomEntryLoader> next = progress.next();
+			LOGGER.info("Got Next {} ", next);
 		        if ( next == null ) {
 		            int startingWorklistSize = worklist.size();
                             while ( worklist.size() > 0 && worklist.size() >= startingWorklistSize ) {

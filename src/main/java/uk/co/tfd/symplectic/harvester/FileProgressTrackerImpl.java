@@ -39,8 +39,9 @@ public class FileProgressTrackerImpl implements ProgressTracker {
 	private File failedFile;
 	private int limitListPages;
 	private boolean updateLists;
+    private String[] objectTypes;
 
-	public FileProgressTrackerImpl(String fileName, RecordHandler recordHandler, int limitListPages, boolean updateLists) {
+	public FileProgressTrackerImpl(String fileName, RecordHandler recordHandler, int limitListPages, boolean updateLists, String[] objectTypes) {
 		chkFile = new File(fileName + ".chk");
 		loadstateFile = new File(fileName);
 		loadstateFileSafe = new File(fileName + ".safe");
@@ -50,6 +51,7 @@ public class FileProgressTrackerImpl implements ProgressTracker {
 		this.recordHandler = recordHandler;
 		this.limitListPages = limitListPages;
 		this.updateLists = updateLists;
+		this.objectTypes = objectTypes;
 		try {
 			load();
 		} catch (IOException e1) {
@@ -135,13 +137,13 @@ public class FileProgressTrackerImpl implements ProgressTracker {
 				String url = in.readUTF();
 				String type = in.readUTF();
 				if ("relationship".equals(type)) {
-					toLoad.put(url, new APIRelationship(recordHandler, this));
+					toLoad.put(url, new APIRelationship(recordHandler, this, limitListPages, objectTypes));
 				} else if ("relationships".equals(type)) {
-					toLoad.put(url, new APIRelationships(recordHandler, this, limitListPages));
+					toLoad.put(url, new APIRelationships(recordHandler, this, limitListPages, objectTypes));
 				} else if (type.endsWith("s")) {
-					toLoad.put(url, new APIObjects(recordHandler, type, this, limitListPages));
+					toLoad.put(url, new APIObjects(recordHandler, type, this, limitListPages, objectTypes));
 				} else {
-					toLoad.put(url, new APIObject(recordHandler, type, this));
+					toLoad.put(url, new APIObject(recordHandler, type, this, limitListPages, objectTypes));
 				}
 				toLoadList.add(url);
 			}

@@ -13,13 +13,15 @@ public class APIRelationships implements AtomEntryLoader, AtomEntryListLoader {
 	private String type;
 	private ProgressTracker tracker;
 	private int limitListPages;
+        private String[] objectTypes;
 
 	public APIRelationships(RecordHandler rh,
-			ProgressTracker tracker, int limitListPages) {
+			ProgressTracker tracker, int limitListPages, String[] objectTypes) {
 		this.rh = rh;
 		this.type = "relationships";
 		this.tracker = tracker;
 		this.limitListPages = limitListPages;
+		this.objectTypes = objectTypes;
 	}
 	
 	public String getType() {
@@ -46,7 +48,7 @@ public class APIRelationships implements AtomEntryLoader, AtomEntryListLoader {
 		String relationshipHref = XmlAide.findAttribute(item,
 				"api:relationship", "href");
 		if (relationshipHref != null) {
-			tracker.toload(relationshipHref, new APIRelationship(rh, tracker));
+			tracker.toload(relationshipHref, new APIRelationship(rh, tracker, limitListPages, objectTypes));
 		}
 		// load api:related/api:object@href
 		Node relationship = XmlAide.findNode(item, "api:relationship");
@@ -56,11 +58,11 @@ public class APIRelationships implements AtomEntryLoader, AtomEntryListLoader {
 				String category = XmlAide.findAttribute(object, "category");
 				String href = XmlAide.findAttribute(object, "href");
 				if ( category != null && href != null ) {
-					tracker.toload(href, new APIObject(rh, category, tracker));
+					tracker.toload(href, new APIObject(rh, category, tracker, limitListPages, objectTypes));
 				}
 				String relationshipsHref = XmlAide.findAttribute(object, "api:relationships",  "href");
 				if ( relationshipsHref != null  ) {
-					tracker.toload(href, new APIRelationship(rh, tracker));
+					tracker.toload(href, new APIRelationship(rh, tracker, limitListPages, objectTypes));
 				}
 			}
 		}

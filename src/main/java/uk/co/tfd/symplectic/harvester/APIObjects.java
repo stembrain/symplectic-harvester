@@ -14,14 +14,16 @@ public class APIObjects implements AtomEntryLoader, AtomEntryListLoader {
 	private ProgressTracker tracker;
 	private String elementType;
 	private int limitListPages;
+       private String[] objectTypes;
 
 	public APIObjects(RecordHandler rh, String pluralType,
-			ProgressTracker tracker, int limitListPages) {
+			ProgressTracker tracker, int limitListPages, String[] objectTypes) {
 		this.rh = rh;
 		this.type = pluralType;
 		this.elementType = pluralType.substring(0, type.length() - 1);
 		this.tracker = tracker;
 		this.limitListPages = limitListPages;
+		this.objectTypes = objectTypes;
 	}
 
 	public String getType() {
@@ -49,12 +51,12 @@ public class APIObjects implements AtomEntryLoader, AtomEntryListLoader {
 		if (elementType.equals(category)) {
 			Node apiObject = XmlAide.findNode(entry, "api:object");
 			String userUrl = XmlAide.findAttribute(apiObject, "href");
-			tracker.toload(userUrl, new APIObject(rh, elementType, tracker));
+			tracker.toload(userUrl, new APIObject(rh, elementType, tracker, limitListPages, objectTypes));
 
 			String relationships = XmlAide.findAttribute(apiObject,
 					"api:relationships", "href");
 			if (relationships != null) {
-				tracker.toload(relationships, new APIRelationships(rh, tracker, limitListPages));
+				tracker.toload(relationships, new APIRelationships(rh, tracker, limitListPages, objectTypes));
 			}
 		}
 	}

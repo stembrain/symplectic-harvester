@@ -40,7 +40,13 @@ public class XmlAide {
 		DocumentBuilderFactory docBuildFactory = DocumentBuilderFactory
 				.newInstance();
 		docBuildFactory.setIgnoringComments(true);
-		String xmlDoc = WebAide.getURLContents(url);
+		
+		String xmlDoc = null;
+		if ( url.startsWith("http") ) {
+		    xmlDoc = ConcurrentHttpFetch.get(url);
+		} else {
+		    xmlDoc = WebAide.getURLContents(url);
+		}
 		// doing this fixes makes it work with UTF8 chars
 		return docBuildFactory.newDocumentBuilder().parse(
 				new InputSource(new StringReader(xmlDoc)));

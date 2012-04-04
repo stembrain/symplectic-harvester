@@ -24,11 +24,18 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vivoweb.harvester.util.InitLog;
@@ -62,6 +69,7 @@ public class SymplecticFetch {
 	 * no default, required
 	 */
 	private static final String URL_ARG = "url";
+        private static final String OBJECT_TYPES_ARG = "categories";
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(SymplecticFetch.class);
 	private static String database = "symplectic";
@@ -70,11 +78,14 @@ public class SymplecticFetch {
 	private int maxUrlFetch;
 	private int limitListPages;
 	private boolean updateLists;
+    private String[] objectTypes;
+    private long lastLog = System.currentTimeMillis();
 
 	protected SymplecticFetch(RecordHandler rh, String database) {
 		if (rh == null) {
 			throw new RuntimeException("Record Handler cant be null");
 		}
+		System.err.println("Using record handler "+rh);
 		this.rh = rh;
 	}
 
@@ -95,6 +106,7 @@ public class SymplecticFetch {
 		maxUrlFetch = Integer.parseInt(argList.get(MAX_URL_GET_ARG));
 		limitListPages = Integer.parseInt(argList.get(LIMIT_LIST_PAGES_ARG));
 		updateLists = Boolean.parseBoolean(argList.get(UPDATE_LIST_ARG));
+		objectTypes = StringUtils.split(argList.get(OBJECT_TYPES_ARG),",");
 		LOGGER.info("Config: Elements API at {} ",baseUrl);
 		LOGGER.info("Config: Max Number of URLs to fetch {} ",maxUrlFetch);
 		LOGGER.info("Config: Max Number of Pages to list {} ",limitListPages);
@@ -143,48 +155,99 @@ public class SymplecticFetch {
 			TransformerException {
 		ProgressTracker progress = null;
 		try {
-			progress = new JDBCProgressTrackerImpl(rh, limitListPages, updateLists);
+			progress = new JDBCProgressTrackerImpl(rh, limitListPages, updateLists, objectTypes);
 		} catch (SQLException e) {
 			LOGGER.info(e.getMessage(),e);
 			progress = new FileProgressTrackerImpl("loadstate", rh,
-					limitListPages, updateLists);
+					limitListPages, updateLists, objectTypes);
 		} catch (IOException e ) {
 			LOGGER.info(e.getMessage(),e);
 			progress = new FileProgressTrackerImpl("loadstate", rh,
-					limitListPages, updateLists);			
+					limitListPages, updateLists, objectTypes);			
 		}
 		
 		// re-scan relationships to extract API objects
 		// reScanRelationships(progress);
 		progress.toload(baseUrl + "/objects?categories=user", new APIObjects(rh, "users", progress,
-				limitListPages));
+				limitListPages, objectTypes));
 		// progress.toload(baseUrl+"publication", new APIObjects(rh,
 		// "publications", progress));
 		int i = 0;
-		while (progress.hasPending() && i < maxUrlFetch) {
-			LOGGER.info("ToDo list contains {} urls ", progress.pending());
+		int threadPoolSize = 20;
+		ExecutorService executorService = Executors.newFixedThreadPool(threadPoolSize);
+		final ConcurrentHashMap<String, FutureTask<String>> worklist = new ConcurrentHashMap<String, FutureTask<String>>();
+		while ( i < maxUrlFetch) {
 			Entry<String, AtomEntryLoader> next = progress.next();
-			AtomEntryLoader loader = next.getValue();
-			LOGGER.info("Loading Object {} ", next.getKey());
-
-			try {
-				loader.loadEntry(next.getKey());
-			} catch (AtomEntryLoadException e) {
-				LOGGER.error(e.getMessage(), e);
-			}
-			i++;
+		        if ( next == null ) {
+                            while ( worklist.size() > 0 ) {
+                                consumeTasks(worklist);
+                                Thread.yield();
+                            }
+                            if (!progress.hasPending()) {
+                                break; // there are none left to come, the workers are empty, and so is pending
+                            }
+		        } else {	                        
+	                        final AtomEntryLoader loader = next.getValue();
+        		        final String key = next.getKey();
+        		        FutureTask<String> task = new FutureTask<String>(new Callable<String>() {
+        
+                                        @Override
+                                        public String call() throws Exception {
+                                          
+                                            try {
+                                                    loader.loadEntry(key);
+                                            } catch (Exception e) {
+                                                    LOGGER.error(e.getMessage(), e);
+                                            }
+                                            return "Done Loading "+key;
+                                        }
+                                });
+                                worklist.put(key, task);
+                                executorService.execute(task);
+                                i++;
+                                // consume any pending tasks
+                                consumeTasks(worklist);
+                                // dont overfill the queue
+        		        while ( worklist.size() > threadPoolSize*2 ) {
+                                    consumeTasks(worklist);
+                                    Thread.yield();
+        		        }
+		        }
 		}
+                while ( worklist.size() > 0) {
+                    consumeTasks(worklist);
+                    Thread.yield();
+                }
+		executorService.shutdown();
 		LOGGER.info("End ToDo list contains {} urls ", progress.pending());
 		progress.dumpLoaded();
 		progress.checkpoint();
 
 	}
 
-	@SuppressWarnings("unused")
+
+    private void consumeTasks(ConcurrentHashMap<String, FutureTask<String>> worklist) {
+        for ( Entry<String, FutureTask<String>>  e : worklist.entrySet()) {
+            if ( e.getValue().isDone() ) {
+                try {
+                    LOGGER.info("Recieved "+e.getValue().get());
+                } catch (Exception e1) {
+                    LOGGER.info("Failed {} ",e.getKey(),e1);
+                }
+                worklist.remove(e.getKey());
+            }
+        }
+        if ( System.currentTimeMillis() > lastLog+5000 ) {
+            LOGGER.info("Current Worklist Backlog {} ",worklist.size());
+            lastLog = System.currentTimeMillis();
+        }
+    }
+
+    @SuppressWarnings("unused")
 	private void reScanRelationships(ProgressTracker tracker) {
 		File publicationsXml = new File("data/raw-records");
-		APIObject userObject = new APIObject(rh, "user", tracker);
-		APIObject publicationObject = new APIObject(rh, "publication", tracker);
+		APIObject userObject = new APIObject(rh, "user", tracker, limitListPages, objectTypes);
+		APIObject publicationObject = new APIObject(rh, "publication", tracker, limitListPages, objectTypes);
 		for (File f : publicationsXml.listFiles()) {
 			if (f.getName().startsWith("relationship")) {
 				try {
@@ -224,6 +287,10 @@ public class SymplecticFetch {
 		parser.addArgument(new ArgDef().setLongOpt(URL_ARG).setRequired(true)
 				.withParameter(true, "url")
 				.setDescription("URL of the Symplectic Elements API"));
+                parser.addArgument(new ArgDef().setLongOpt(OBJECT_TYPES_ARG).setRequired(false)
+                        .withParameter(true, "category")
+                        .setDefaultValue("user,publication,grant,activity")
+                        .setDescription("Categories to extract"));
 		parser.addArgument(new ArgDef()
 				.setLongOpt(UPDATE_LIST_ARG)
 				.setRequired(false)

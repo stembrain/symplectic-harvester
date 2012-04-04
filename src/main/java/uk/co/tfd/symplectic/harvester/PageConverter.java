@@ -41,7 +41,7 @@ public class PageConverter {
 		// for the moment, limit to 20 pages.
 		npages = Math.min(npages, limitListPages);
 
-		LOGGER.info("Fetching {} records from search {} ", nrecords, firstPageUrl);
+		LOGGER.debug("Fetching {} records from search {} ", nrecords, firstPageUrl);
 		for (int page = 1; page <= npages; page++) {
 			StringBuilder urlSb = new StringBuilder();
 			urlSb.append(firstPageUrl);
@@ -55,7 +55,7 @@ public class PageConverter {
 			doc = XmlAide.loadXmlDocument(urlSb.toString());
 
 			NodeList results = doc.getElementsByTagName("entry");
-			LOGGER.info("Got {} results from {} ", results.getLength(), urlSb.toString());
+			LOGGER.debug("Got {} results from {} ", results.getLength(), urlSb.toString());
 			for (int i = 0; i < results.getLength(); i++) {
 				loader.addPage(results.item(i));
 			}

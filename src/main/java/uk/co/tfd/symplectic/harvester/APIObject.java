@@ -32,15 +32,19 @@ public class APIObject implements AtomEntryLoader, RecordStreamOrigin {
 	private RecordHandler rh;
 	private String type;
 	private ProgressTracker tracker;
-	protected static XMLRecordOutputStream baseXMLROS = new XMLRecordOutputStream(
+    private int limitListPages;
+    private String[] objectTypes;
+	protected XMLRecordOutputStream baseXMLROS = new XMLRecordOutputStream(
 			new String[] { "api:object" },
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<object xmlns=\"http://www.symplectic.co.uk/vivo/\" xmlns:api=\"http://www.symplectic.co.uk/publications/api\">\n",
 			"</object>", ".*?id=\"(.*?)\".*?", null);
 
-	public APIObject(RecordHandler rh, String type, ProgressTracker tracker) {
+	public APIObject(RecordHandler rh, String type, ProgressTracker tracker, int limitListPages, String[] objectTypes) {
 		this.rh = rh;
 		this.type = type;
 		this.tracker = tracker;
+		this.limitListPages = limitListPages;
+		this.objectTypes = objectTypes;
 	}
 
 	@Override
@@ -78,7 +82,7 @@ public class APIObject implements AtomEntryLoader, RecordStreamOrigin {
 		}
 	}
 
-	public void loadEntrys(Document doc) {
+	public void loadEntrys(Document doc) throws AtomEntryLoadException {
 		NodeList user = doc.getElementsByTagName("api:object");
 		for (int i = 0; i < user.getLength(); i++) {
 			Node item = user.item(i);
@@ -87,7 +91,7 @@ public class APIObject implements AtomEntryLoader, RecordStreamOrigin {
 				Element object = (Element) item;
 				String url = XmlAide.findAttribute(item, "href");
 				if (url != null && !tracker.isLoaded(url)) {
-					LOGGER.info("Extracting {} from relationship ",url);
+					LOGGER.debug("Extracting {} from relationship ",url);
 					try {
 						object.setAttribute("uriref", XmlAide.hash(url));
 						String userAsString = XmlAide.getXmlFromNode(object);
@@ -107,9 +111,22 @@ public class APIObject implements AtomEntryLoader, RecordStreamOrigin {
 						tracker.loadedFailed(url);
 					}
 				}
+				// there are some relationships in the api object that we may want to load 
+				// expecially when it comes to grants.
+				addPage(item);
 			}
 		}
 
 	}
+	
+    private void addPage(Node entry) throws AtomEntryLoadException {
+        String category = XmlAide.findAttribute(entry, "category");
+        if (type.equals(category)) {
+            String relationships = XmlAide.findAttribute(entry, "api:relationships", "href");
+            if (relationships != null) {
+                tracker.toload(relationships, new APIRelationships(rh, tracker, limitListPages, objectTypes));
+            }
+        }
+    }
 
 }

@@ -24,20 +24,24 @@ public class APIRelationship implements AtomEntryLoader, RecordStreamOrigin {
 	private RecordHandler rh;
 	private String type;
 	private ProgressTracker tracker;
-	private APIObject userObject;
-	private APIObject publicationObject;
-	protected static XMLRecordOutputStream baseXMLROS = new XMLRecordOutputStream(
+	private APIObject[] apiObjects;
+	protected XMLRecordOutputStream baseXMLROS = new XMLRecordOutputStream(
 			new String[] { "api:relationship" },
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<relationship xmlns=\"http://www.symplectic.co.uk/vivo/\" xmlns:api=\"http://www.symplectic.co.uk/publications/api\">\n",
 			"</relationship>", ".*?id=\"(.*?)\".*?", null);
 
 	public APIRelationship(RecordHandler rh,
-			ProgressTracker tracker) {
+			ProgressTracker tracker,
+			int limitListPages,
+			String[] objectTypes) {
 		this.rh = rh;
 		this.type = "relationship";
 		this.tracker = tracker;
-		userObject = new APIObject(rh, "user", tracker);
-		publicationObject  = new APIObject(rh, "publication", tracker);
+		apiObjects = new APIObject[objectTypes.length];
+		for (int i = 0; i < objectTypes.length; i++) {
+		    apiObjects[i] = new APIObject(rh, objectTypes[i], tracker, limitListPages, objectTypes);
+		    
+		}
 	}
 	
 	public String getType() {
@@ -78,8 +82,10 @@ public class APIRelationship implements AtomEntryLoader, RecordStreamOrigin {
 				osWriter.flush();
 
 			}
-			userObject.loadEntrys(doc);
-			publicationObject.loadEntrys(doc);
+			
+			for (APIObject o : apiObjects) {
+			    o.loadEntrys(doc);
+			}
 			tracker.loaded(url);
 		} catch (Exception e) {
 			tracker.loadedFailed(url);

@@ -286,16 +286,16 @@
                 </rdf:RDF>
            </xsl:when>
            <xsl:when test="@type-id=17" >
-             <!--  (Grant) Funder of (User) -->
+             <!--  (Grant) Funder of (User) eg relationship30585 -->
            </xsl:when>
            <xsl:when test="@type-id=23" >
-              <!-- Professional Activity to User -->
+              <!-- Professional Activity to User eg relationship30627 -->
            </xsl:when>
            <xsl:when test="@type-id=43" >
-              <!-- (User) Primary investigator (Grant) -->
+              <!-- (User) Primary investigator (Grant) relationship30586 -->
            </xsl:when>
            <xsl:when test="@type-id=44" >
-              <!-- (User) Secondary investigator (Grant) -->
+              <!-- (User) Secondary investigator (Grant) relationship30587 -->
            </xsl:when>
 	       <xsl:otherwise>
 		        <rdf:RDF 

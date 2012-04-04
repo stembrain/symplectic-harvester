@@ -55,6 +55,7 @@ public class APIObject implements AtomEntryLoader, RecordStreamOrigin {
 	@Override
 	public void writeRecord(String id, String data) throws IOException {
 		LOGGER.info("Adding Record " + type + id);
+		// assume the data here is newer, so overwrite.
 		rh.addRecord(type + id, data, getClass());
 	}
 

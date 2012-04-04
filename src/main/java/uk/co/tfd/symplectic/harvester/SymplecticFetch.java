@@ -181,7 +181,7 @@ public class SymplecticFetch {
 		        if ( next == null ) {
 		            int startingWorklistSize = worklist.size();
                             while ( worklist.size() > 0 && worklist.size() >= startingWorklistSize ) {
-                                consumeTasks(worklist);
+                                consumeTasks(worklist, progress);
                                 Thread.yield();
                             }
                             if (!progress.hasPending() && worklist.size() == 0) {
@@ -207,16 +207,16 @@ public class SymplecticFetch {
                                 executorService.execute(task);
                                 i++;
                                 // consume any pending tasks
-                                consumeTasks(worklist);
+                                consumeTasks(worklist, progress);
                                 // dont overfill the queue
         		        while ( worklist.size() > threadPoolSize*2 ) {
-                                    consumeTasks(worklist);
+                                    consumeTasks(worklist, progress);
                                     Thread.yield();
         		        }
 		        }
 		}
                 while ( worklist.size() > 0) {
-                    consumeTasks(worklist);
+                    consumeTasks(worklist, progress);
                     Thread.yield();
                 }
 		executorService.shutdown();
@@ -227,7 +227,7 @@ public class SymplecticFetch {
 	}
 
 
-    private void consumeTasks(ConcurrentHashMap<String, FutureTask<String>> worklist) {
+    private void consumeTasks(ConcurrentHashMap<String, FutureTask<String>> worklist, ProgressTracker tracker) {
         for ( Entry<String, FutureTask<String>>  e : worklist.entrySet()) {
             if ( e.getValue().isDone() ) {
                 try {
@@ -239,7 +239,7 @@ public class SymplecticFetch {
             }
         }
         if ( System.currentTimeMillis() > lastLog+5000 ) {
-            LOGGER.info("Current Worklist Backlog {} ",worklist.size());
+            LOGGER.info("Current Worklist Backlog {} In Pending or Loading state {} ",worklist.size(), tracker.pending());
             lastLog = System.currentTimeMillis();
         }
     }

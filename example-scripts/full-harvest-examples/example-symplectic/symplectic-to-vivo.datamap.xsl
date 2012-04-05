@@ -233,7 +233,7 @@ Activities.
 Activities are processed via relationships since they always appear to be bound to the person who performed the activity
  -->
        <xsl:template match="api:object[@category='activity' and @type-id=24]" mode="type23">
-        <xsl:variable name="username" select="ancestor::api:relationship/api:relaited[@direction='to']/api:object/@username" /> 
+        <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
         <rdf:RDF 
             xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
             xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' 
@@ -259,7 +259,7 @@ Activities are processed via relationships since they always appear to be bound 
 
        <xsl:template match="api:object[@category='activity' and @type-id=19]" mode="type23">
           <!-- Biography -->
-        <xsl:variable name="username" select="ancestor::api:relationship/api:relaited[@direction='to']/api:object/@username" /> 
+        <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
         <rdf:RDF 
             xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
             xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' 
@@ -279,7 +279,7 @@ Activities are processed via relationships since they always appear to be bound 
        </xsl:template>
        <xsl:template match="api:object[@category='activity' and @type-id=20]" mode="type23">
             <!--  Qualification Award -->
-            <xsl:variable name="username" select="ancestor::api:relationship/api:relaited[@direction='to']/api:object/@username" /> 
+            <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
         <rdf:RDF 
             xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
             xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' 
@@ -360,7 +360,7 @@ Activities are processed via relationships since they always appear to be bound 
 
        <xsl:template match="api:object[@category='activity' and @type-id=21]" mode="type23">
             <!--  Honor Award -->
-            <xsl:variable name="username" select="ancestor::api:relationship/api:relaited[@direction='to']/api:object/@username" /> 
+            <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
 	        <rdf:RDF 
 	            xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
 	            xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' 
@@ -410,7 +410,7 @@ Activities are processed via relationships since they always appear to be bound 
        </xsl:template>
        <xsl:template match="api:object[@category='activity' and @type-id=30]" mode="type23">
             <!--  Invited Talk -->
-            <xsl:variable name="username" select="ancestor::api:relationship/api:relaited[@direction='to']/api:object/@username" /> 
+            <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
 	        <rdf:RDF 
 	            xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
 	            xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' 
@@ -449,7 +449,7 @@ Activities are processed via relationships since they always appear to be bound 
        </xsl:template>
        <xsl:template match="api:object[@category='activity' and @type-id=22]" mode="type23">
        <!--  Member -->
-            <xsl:variable name="username" select="ancestor::api:relationship/api:relaited[@direction='to']/api:object/@username" /> 
+            <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
  
         <rdf:RDF 
             xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
@@ -532,7 +532,7 @@ Activities are processed via relationships since they always appear to be bound 
 	   
 	   <xsl:template match="api:object[@category='activity' and @type-id=23]" mode="type23">
 	       <!--  External Responsibility -->
-	        <xsl:variable name="username" select="ancestor::api:relationship/api:relaited[@direction='to']/api:object/@username" /> 
+	        <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
 	              
 	        <rdf:RDF 
 	            xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
@@ -626,7 +626,7 @@ Activities are processed via relationships since they always appear to be bound 
        </xsl:template>
        <xsl:template match="api:object[@category='activity' and @type-id=25]" mode="type23">
            <!--  Webpage -->
-            <xsl:variable name="username" select="ancestor::api:relationship/api:relaited[@direction='to']/api:object/@username" /> 
+            <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
                   
             <rdf:RDF 
                 xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
@@ -663,7 +663,7 @@ Activities are processed via relationships since they always appear to be bound 
 
        <xsl:template match="api:object[@category='activity' and @type-id=26]" mode="type23">
            <!--  Social Media -->
-            <xsl:variable name="username" select="ancestor::api:relationship/api:relaited[@direction='to']/api:object/@username" /> 
+            <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
                   
             <rdf:RDF 
                 xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
@@ -688,18 +688,15 @@ Activities are processed via relationships since they always appear to be bound 
                 <core:linkURI>
                    <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-hyperlink']/api:text"/>
                 </core:linkURI>
-                <core:linkAnchorText>
-                   <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-title']/api:text"/>
-                </core:linkAnchorText>
+                <core:linkAnchorText><xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-title']/api:text"/></core:linkAnchorText>
                 <!--  add properties to enable smushing -->
-                <svo:smush>webpage:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-hyperlink']/api:text"/>
-                </svo:smush>
+                <svo:smush>webpage:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-hyperlink']/api:text"/></svo:smush>
             </rdf:Description>
            </rdf:RDF>
           </xsl:template>
           <xsl:template match="api:object[@category='activity' and @type-id=27]" mode="type23">
            <!--  Social Media -->
-            <xsl:variable name="username" select="ancestor::api:relationship/api:relaited[@direction='to']/api:object/@username" /> 
+            <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
                   
             <rdf:RDF 
                 xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
@@ -722,12 +719,9 @@ Activities are processed via relationships since they always appear to be bound 
 			    <rdf:type rdf:resource="http://vivoweb.org/ontology/core#OutreachProviderRole"/>
 			    <core:outreachProviderRoleOf rdf:resource="{$baseURI}{$username}"/>
 			<!--  no data available to create this   <core:roleContributesTo rdf:resource="{$baseURI}outreach{@id}-org"/> -->
-			    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">
-                   <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/>
-			    </rdfs:label>
+			    <rdfs:label><xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/></rdfs:label>
                 <!--  add properties to enable smushing -->
-                <svo:smush>webpage:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/>
-                </svo:smush>
+                <svo:smush>webpage:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/></svo:smush>
             </rdf:Description>
             
            </rdf:RDF>
@@ -735,7 +729,7 @@ Activities are processed via relationships since they always appear to be bound 
 
           <xsl:template match="api:object[@category='activity' and @type-id=28]" mode="type23">
            <!--  Profile of UG teaching -->
-            <xsl:variable name="username" select="ancestor::api:relationship/api:relaited[@direction='to']/api:object/@username" /> 
+            <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
                   
             <rdf:RDF 
                 xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
@@ -758,7 +752,7 @@ Activities are processed via relationships since they always appear to be bound 
                 <rdf:type rdf:resource="http://vivoweb.org/ontology/core#TeacherRole"/>
                 <core:teacherRoleOf rdf:resource="{$baseURI}{$username}"/>
                 <core:associatedWithPosition rdf:resource="{$baseURI}ugteacher{@id}-position" />
-                <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">
+                <rdfs:label>
                    <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/>
                 </rdfs:label>
                 <core:description>
@@ -773,7 +767,7 @@ Activities are processed via relationships since they always appear to be bound 
                 <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
                 <rdf:type rdf:resource="http://vivoweb.org/ontology/core#Position"/>
                 <core:associatedRole rdf:resource="{$baseURI}ugteacher{@id}" />
-                <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">
+                <rdfs:label>
                     Undergraduate Teaching
                 </rdfs:label>
                 <!--  add properties to enable smushing -->
@@ -785,7 +779,7 @@ Activities are processed via relationships since they always appear to be bound 
 
           <xsl:template match="api:object[@category='activity' and @type-id=29]" mode="type23">
            <!--  Profile of PG teaching -->
-            <xsl:variable name="username" select="ancestor::api:relationship/api:relaited[@direction='to']/api:object/@username" /> 
+            <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
                   
             <rdf:RDF 
                 xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
@@ -808,24 +802,17 @@ Activities are processed via relationships since they always appear to be bound 
                 <rdf:type rdf:resource="http://vivoweb.org/ontology/core#TeacherRole"/>
                 <core:teacherRoleOf rdf:resource="{$baseURI}{$username}"/>
                 <core:associatedWithPosition rdf:resource="{$baseURI}pgteacher{@id}-position" />
-                <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">
-                   <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/>
-                </rdfs:label>
-                <core:description>
-                   <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/>
-                </core:description>
+                <rdfs:label ><xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/></rdfs:label>
+                <core:description><xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/></core:description>
                 <!--  add properties to enable smushing -->
-                <svo:smush>ugteacherrole:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/>
-                </svo:smush>
+                <svo:smush>ugteacherrole:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/></svo:smush>
             </rdf:Description>
 
             <rdf:Description rdf:about="{$baseURI}pgteacher{@id}-position">
                 <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
                 <rdf:type rdf:resource="http://vivoweb.org/ontology/core#Position"/>
                 <core:associatedRole rdf:resource="{$baseURI}ugteacher{@id}" />
-                <rdfs:label>
-                    Post Graduate Teaching
-                </rdfs:label>
+                <rdfs:label>Post Graduate Teaching</rdfs:label>
                 <!--  add properties to enable smushing -->
                 <svo:smush>position:Undergraduate Teaching</svo:smush>
             </rdf:Description>
@@ -835,7 +822,7 @@ Activities are processed via relationships since they always appear to be bound 
 
           <xsl:template match="api:object[@category='activity' and @type-id=33]" mode="type23">
            <!--  PhD Student -->
-            <xsl:variable name="username" select="ancestor::api:relationship/api:relaited[@direction='to']/api:object/@username" /> 
+            <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
                   
             <rdf:RDF 
                 xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
@@ -863,11 +850,8 @@ Activities are processed via relationships since they always appear to be bound 
                 <rdf:type rdf:resource="http://vivoweb.org/ontology/core#GraduateStudent"/>
                 <core:adviseeIn rdf:resource="{$baseURI}graduate-student{@id}-relationship" />
                 <ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
-                <rdfs:label>
-                   <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-title']/api:text"/>
-                </rdfs:label>
-                <svo:smush>person:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-title']/api:text"/>
-                </svo:smush>               
+                <rdfs:label><xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-title']/api:text"/></rdfs:label>
+                <svo:smush>person:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-title']/api:text"/></svo:smush>               
               </rdf:Description>
               <rdf:Description rdf:about="{$baseURI}graduate-student{@id}-subject">
                   <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
@@ -881,7 +865,7 @@ Activities are processed via relationships since they always appear to be bound 
 
           <xsl:template match="api:object[@category='activity' and @type-id=38]" mode="type23">
            <!--  Network -->
-            <xsl:variable name="username" select="ancestor::api:relationship/api:relaited[@direction='to']/api:object/@username" /> 
+            <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
                   
             <rdf:RDF 
                 xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
@@ -913,8 +897,7 @@ Activities are processed via relationships since they always appear to be bound 
                       <core:dateTimePrecision
                              rdf:resource="http://vivoweb.org/ontology/core#yearPrecision" />
                       <core:dateTime rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">
-                          <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-awarded-year']/api:integer" />-01-01T00:00:00Z
-                      </core:dateTime>
+                          <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-awarded-year']/api:integer" />-01-01T00:00:00Z</core:dateTime>
                   </rdf:Description>
               </xsl:if>            
             </rdf:RDF>
@@ -922,7 +905,7 @@ Activities are processed via relationships since they always appear to be bound 
 
           <xsl:template match="api:object[@category='activity' and @type-id=40]" mode="type23">
            <!--  Network -->
-            <xsl:variable name="username" select="ancestor::api:relationship/api:relaited[@direction='to']/api:object/@username" /> 
+            <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
                   
             <rdf:RDF 
                 xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
@@ -941,9 +924,7 @@ Activities are processed via relationships since they always appear to be bound 
               <rdf:Description rdf:about="{$baseURI}school{@id}">
                     <rdf:type rdf:resource="http://vivoweb.org/ontology/core#School"/>
                     <core:hasCurrentMember rdf:resource="{$baseURI}{$username}" />
-	                <rdfs:label>
-	                   <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-schools']/api:text"/>
-	                </rdfs:label>
+	                <rdfs:label><xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-schools']/api:text"/></rdfs:label>
 	                <svo:smush>organization:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-schools']/api:text"/></svo:smush>               
               </rdf:Description>
               

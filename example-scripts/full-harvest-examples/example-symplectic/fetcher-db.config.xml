@@ -2,7 +2,7 @@
 <db-config db-type="mysql" max-url-age="864000">
 	<mysql>
 		<jdbc-class>com.mysql.jdbc.Driver</jdbc-class>
-		<jdbc-url>jdbc:mysql://127.0.0.1:3306/vivo?useUnicode=true&amp;characterEncoding=UTF-8</jdbc-url>
+		<jdbc-url>jdbc:mysql://localhost/vivo?useUnicode=true&amp;characterEncoding=UTF-8&amp;useServerPrepStmts=false&amp;cachePrepStmts=true&amp;prepStmtCacheSize=4096&amp;prepStmtCacheSqlLimit=4096</jdbc-url>
 		<jdbc-user>vivo</jdbc-user>
 		<jdbc-password>vivopw</jdbc-password>
 		<check-db-sql>select count(*) from symplectic_fetch</check-db-sql>
@@ -16,11 +16,9 @@
 			id from symplectic_fetch where loadstate = ? order by lastupdate asc
 		</select-on-status-sql>
 		<select-on-status-sql>select url, lastupdate, loadstate, loader_type,
-			id from symplectic_fetch where loadstate = ? order by
-			lastupdate asc</select-on-status-sql>
+			id from symplectic_fetch where loadstate = ? </select-on-status-sql>
 		<select-on-status-limit1-sql>select url, lastupdate, loadstate, loader_type,
-			id from symplectic_fetch where loadstate = ? order by
-			lastupdate asc limit 1 </select-on-status-limit1-sql>
+			id from symplectic_fetch where loadstate = ? limit 1 </select-on-status-limit1-sql>
 		<insert-url-state-toload-sql>update symplectic_fetch set url = ?,
 			lastupdate = ?, loadstate = ?, loader_type = ? where id = ?
 		</insert-url-state-toload-sql>

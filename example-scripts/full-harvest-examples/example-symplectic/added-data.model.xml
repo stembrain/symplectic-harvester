@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   | Copyright (c) 2012 Ian Boston for Symplectic, relicensed under the AGPL license in repository https://github.com/ieb/symplectic-harvester
+   | Please see the LICENSE file for more details
+ -->
+
+<Config>
+	<Param name="type">tdb</Param>
+	<Param name="dbDir">data/subtracted-data/</Param>
+</Config>

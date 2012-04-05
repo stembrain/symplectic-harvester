@@ -47,11 +47,11 @@ cd ..
 harvester-xsltranslator -X xsltranslator.config.xml
 
 
-pushd data/translated-records
+cd data/translated-records
 find . -size 0 -exec rm .metadata/{} \;
 find . -size 0 -exec rm {} \;
-rm grant*
-popd
+find . -name 'grant*' -exec rm {} \;
+cd ../../
 
 # Execute Transfer to import from record handler into local temp model
 # From this stage on the script places the data into a Jena model. A model is a

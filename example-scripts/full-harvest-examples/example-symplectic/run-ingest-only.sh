@@ -43,7 +43,7 @@ cd ..
 # Apply Subtractions to Previous model
 harvester-transfer -o previous-harvest.model.xml -i subtracted-data.model.xml -m
 # Apply Additions to Previous model
-harvester-transfer -o previous-harvest.model.xml -i added-data.mode.xml
+harvester-transfer -o previous-harvest.model.xml -i added-data.model.xml
 
 # Now that the changes have been applied to the previous harvest and the harvested data in vivo
 #	agree with the previous harvest, the changes are now applied to the vivo model.

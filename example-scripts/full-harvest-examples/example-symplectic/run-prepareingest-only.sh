@@ -84,4 +84,4 @@ harvester-diff -X diff-subtractions.config.xml
 #	the current harvest but not in the previous harvest need to be identified for addition.
 harvester-diff -X diff-additions.config.xml
 
-echo 'Data is ready for ingest, please run rin-ingest-only.sh to perform that step'
+echo 'Data is ready for ingest, please run run-ingest-only.sh to perform that step'

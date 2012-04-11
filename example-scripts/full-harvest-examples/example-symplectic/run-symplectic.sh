@@ -99,7 +99,7 @@ harvester-transfer -o previous-harvest.model.xml -i added-data.mode.xml
 # Apply Subtractions to VIVO model
 harvester-transfer -o vivo.model.xml -i subtracted-data.model.xml -m
 # Apply Additions to VIVO model
-harvester-transfer -o vivo.model.xml -r added-data.model.xml
+harvester-transfer -o vivo.model.xml -i added-data.model.xml
 
 #Output some counts
 PUBS=`cat data/vivo-additions.rdf.xml | grep 'http://vivoweb.org/ontology/core#InformationResource' | wc -l`

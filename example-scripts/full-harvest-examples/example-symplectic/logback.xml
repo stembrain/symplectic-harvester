@@ -99,7 +99,7 @@
     <appender-ref ref="Error"/>
     <appender-ref ref="AllAppender"/>
   </logger>
-  <logger name="com.hp.hpl.jena.rdf.model.impl.RDFDefaultErrorHandler" level="${rdf-error-level:-ERROR}">
+  <logger name="com.hp.hpl.jena.rdf.model.impl.RDFDefaultErrorHandler" level="${rdf-error-level:-INFO}">
     <appender-ref ref="Console"/>
     <appender-ref ref="Error"/>
     <appender-ref ref="AllAppender"/>

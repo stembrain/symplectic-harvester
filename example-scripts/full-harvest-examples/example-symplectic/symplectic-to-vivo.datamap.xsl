@@ -233,6 +233,7 @@ Activities.
 Activities are processed via relationships since they always appear to be bound to the person who performed the activity
  -->
        <xsl:template match="api:object[@category='activity' and @type-id=24]" mode="type23">
+        <!--  research themes -->
         <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
         <rdf:RDF 
             xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
@@ -242,18 +243,25 @@ Activities are processed via relationships since they always appear to be bound 
             xmlns:api='http://www.symplectic.co.uk/publications/api'
             xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'
             >
+            <xsl:variable name="id" select="@id" />
             <!--  person -->
             <rdf:Description rdf:about="{$baseURI}{$username}" >
-                 <core:hasResearchArea rdf:resource="{$baseURI}concept{@id}" />
+                <xsl:for-each select="api:records/api:record/api:native/api:field[@name='c-keywords']/api:items/api:item"> 
+                     <xsl:variable name="p" select="position()" />
+                     <core:hasResearchArea rdf:resource="{$baseURI}concept{$id}-{$p}" />
+                </xsl:for-each>
             </rdf:Description>
-            <rdf:Description rdf:about="{$baseURI}concept{@id}">
-                <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-                <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
-                <ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
-                <core:researchAreaOf rdf:resource="{$baseURI}{$username}"/>
-                <rdfs:label><xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-comments']/api:text"/></rdfs:label>
-                <svo:smush>concept:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-comments']/api:text"/></svo:smush>
-            </rdf:Description>
+            <xsl:for-each select="api:records/api:record/api:native/api:field[@name='c-keywords']/api:items/api:item"> 
+                 <xsl:variable name="p" select="position()" />
+	            <rdf:Description rdf:about="{$baseURI}concept{$id}-{$p}">
+	                <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+	                <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+	                <ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
+	                <core:researchAreaOf rdf:resource="{$baseURI}{$username}"/>
+	                <rdfs:label><xsl:value-of select="."/></rdfs:label>
+	                <svo:smush>concept:<xsl:value-of select="."/></svo:smush>
+	            </rdf:Description>
+            </xsl:for-each>
           </rdf:RDF>
        </xsl:template>
 
@@ -442,8 +450,6 @@ Activities are processed via relationships since they always appear to be bound 
                 <rdfs:label>
                     <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/>
                 </rdfs:label>
-                <svo:smush>invitedtalk:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/>
-                </svo:smush>
 	          </rdf:Description>
 	      </rdf:RDF>
        </xsl:template>
@@ -479,20 +485,17 @@ Activities are processed via relationships since they always appear to be bound 
 	                <rdfs:label>
 	                    <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-role']/api:text"/>
 	                </rdfs:label>
-	                <svo:smush>member-role:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-role']/api:text"/>
-	                </svo:smush>
 	          </rdf:Description>
 	          <!--  organization -->
 	          <rdf:Description rdf:about="{$baseURI}member{@id}-org">
 			    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-			    <rdf:type rdf:resource="http://vivoweb.org/ontology/core#School"/>
 			    <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
-			    <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
 			    <core:contributingRole rdf:resource="{$baseURI}member{@id}-role"/>
 	                <ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
 	                <rdfs:label>
 	                    <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-organisation']/api:text"/>
 	                </rdfs:label>
+	                <!--  for some reason smushing this fails -->
 	                <svo:smush>organization:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-organisation']/api:text"/>
 	                </svo:smush>
 	          </rdf:Description>
@@ -554,7 +557,7 @@ Activities are processed via relationships since they always appear to be bound 
 	            <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
 	            <rdf:type rdf:resource="http://vivoweb.org/ontology/core#Role"/>
 	            <rdf:type rdf:resource="http://vivoweb.org/ontology/core#MemberRole"/>
-	                <core:roleContributesTo rdf:resource="{$baseURI}external-org{@id}"/>
+	                <core:roleContributesTo rdf:resource="{$baseURI}external{@id}-org"/>
 	                <core:roleOf rdf:resource="{$baseURI}{$username}"/>
 	                <ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
 	                <xsl:if test="api:records/api:record/api:native/api:field[@name='c-awarded-year']" >
@@ -571,7 +574,7 @@ Activities are processed via relationships since they always appear to be bound 
 	            </rdf:Description>
 	            
 	           <!--  organisation -->
-	          <rdf:Description rdf:about="{$baseURI}external-org{@id}">
+	          <rdf:Description rdf:about="{$baseURI}external{@id}-org">
 	            <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
 	            <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
 	            <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
@@ -654,8 +657,10 @@ Activities are processed via relationships since they always appear to be bound 
 	            <core:linkAnchorText>
                    <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-title']/api:text"/>
 	            </core:linkAnchorText>
-	            <!--  add properties to enable smushing -->
-	            <svo:smush>webpage:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-hyperlink']/api:text"/>
+                <svo:smush>
+                   webpage:
+                   <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-title']/api:text"/>:
+                   <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-hyperlink']/api:text"/>
                 </svo:smush>
 	        </rdf:Description>
 	       </rdf:RDF>
@@ -689,13 +694,16 @@ Activities are processed via relationships since they always appear to be bound 
                    <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-hyperlink']/api:text"/>
                 </core:linkURI>
                 <core:linkAnchorText><xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-title']/api:text"/></core:linkAnchorText>
-                <!--  add properties to enable smushing -->
-                <svo:smush>webpage:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-hyperlink']/api:text"/></svo:smush>
+                <svo:smush>
+                   webpage:
+                   <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-title']/api:text"/>:
+                   <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-hyperlink']/api:text"/>
+                </svo:smush>
             </rdf:Description>
            </rdf:RDF>
           </xsl:template>
           <xsl:template match="api:object[@category='activity' and @type-id=27]" mode="type23">
-           <!--  Social Media -->
+           <!--  External Responsibility -->
             <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
                   
             <rdf:RDF 
@@ -718,12 +726,21 @@ Activities are processed via relationships since they always appear to be bound 
 			    <rdf:type rdf:resource="http://vivoweb.org/ontology/core#Role"/>
 			    <rdf:type rdf:resource="http://vivoweb.org/ontology/core#OutreachProviderRole"/>
 			    <core:outreachProviderRoleOf rdf:resource="{$baseURI}{$username}"/>
-			<!--  no data available to create this   <core:roleContributesTo rdf:resource="{$baseURI}outreach{@id}-org"/> -->
+			    <core:roleContributesTo rdf:resource="{$baseURI}outreach-external-org" />
 			    <rdfs:label><xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/></rdfs:label>
                 <!--  add properties to enable smushing -->
-                <svo:smush>webpage:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/></svo:smush>
+                <svo:smush>outreachrole:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/></svo:smush>
             </rdf:Description>
             
+            <!--  not enough information to be able to specify this from the Elements API -->
+            <rdf:Description rdf:about="{$baseURI}outreach-external-org">
+                <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+                <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
+                <core:contributingRole rdf:resource="{$baseURI}outreach{@id}"/>
+                <ufVivo:harvestedBy>Symplectic-Harvester</ufVivo:harvestedBy>
+                    <rdfs:label>External Organization</rdfs:label>
+                    <svo:smush>organization:External Organization</svo:smush>
+            </rdf:Description> 
            </rdf:RDF>
           </xsl:template>
 
@@ -751,27 +768,24 @@ Activities are processed via relationships since they always appear to be bound 
                 <rdf:type rdf:resource="http://vivoweb.org/ontology/core#Role"/>
                 <rdf:type rdf:resource="http://vivoweb.org/ontology/core#TeacherRole"/>
                 <core:teacherRoleOf rdf:resource="{$baseURI}{$username}"/>
-                <core:associatedWithPosition rdf:resource="{$baseURI}ugteacher{@id}-position" />
+                <core:roleRealizedIn rdf:resource="{$baseURI}ugteacher{@id}-course" />
                 <rdfs:label>
                    <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/>
                 </rdfs:label>
                 <core:description>
                    <xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/>
                 </core:description>
-                <!--  add properties to enable smushing -->
-                <svo:smush>ugteacherrole:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/>
-                </svo:smush>
             </rdf:Description>
 
-            <rdf:Description rdf:about="{$baseURI}ugteacher{@id}-position">
+            <rdf:Description rdf:about="{$baseURI}ugteacher{@id}-course">
                 <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-                <rdf:type rdf:resource="http://vivoweb.org/ontology/core#Position"/>
-                <core:associatedRole rdf:resource="{$baseURI}ugteacher{@id}" />
+                <rdf:type rdf:resource="http://vivoweb.org/ontology/core#Course"/>
+                <core:realizedRole rdf:resource="{$baseURI}ugteacher{@id}" />
                 <rdfs:label>
-                    Undergraduate Teaching
+                    Undergraduate Teaching Course
                 </rdfs:label>
                 <!--  add properties to enable smushing -->
-                <svo:smush>position:Undergraduate Teaching</svo:smush>
+                <svo:smush>course:Undergraduate Teaching Course</svo:smush>
             </rdf:Description>
             
            </rdf:RDF>
@@ -801,20 +815,18 @@ Activities are processed via relationships since they always appear to be bound 
                 <rdf:type rdf:resource="http://vivoweb.org/ontology/core#Role"/>
                 <rdf:type rdf:resource="http://vivoweb.org/ontology/core#TeacherRole"/>
                 <core:teacherRoleOf rdf:resource="{$baseURI}{$username}"/>
-                <core:associatedWithPosition rdf:resource="{$baseURI}pgteacher{@id}-position" />
+                <core:roleRealizedIn rdf:resource="{$baseURI}pgteacher{@id}-course" />
                 <rdfs:label ><xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/></rdfs:label>
                 <core:description><xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/></core:description>
-                <!--  add properties to enable smushing -->
-                <svo:smush>ugteacherrole:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-details']/api:text"/></svo:smush>
             </rdf:Description>
 
-            <rdf:Description rdf:about="{$baseURI}pgteacher{@id}-position">
+            <rdf:Description rdf:about="{$baseURI}pgteacher{@id}-course">
                 <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-                <rdf:type rdf:resource="http://vivoweb.org/ontology/core#Position"/>
-                <core:associatedRole rdf:resource="{$baseURI}ugteacher{@id}" />
-                <rdfs:label>Post Graduate Teaching</rdfs:label>
+                <rdf:type rdf:resource="http://vivoweb.org/ontology/core#Course"/>
+                <core:realizedRole rdf:resource="{$baseURI}pgteacher{@id}" />
+                <rdfs:label>Post Graduate Teaching Course</rdfs:label>
                 <!--  add properties to enable smushing -->
-                <svo:smush>position:Undergraduate Teaching</svo:smush>
+                <svo:smush>course:Post Graduate Teaching Course</svo:smush>
             </rdf:Description>
             
            </rdf:RDF>
@@ -904,7 +916,7 @@ Activities are processed via relationships since they always appear to be bound 
           </xsl:template>
 
           <xsl:template match="api:object[@category='activity' and @type-id=40]" mode="type23">
-           <!--  Network -->
+           <!--  School -->
             <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
                   
             <rdf:RDF 
@@ -926,6 +938,70 @@ Activities are processed via relationships since they always appear to be bound 
                     <core:hasCurrentMember rdf:resource="{$baseURI}{$username}" />
 	                <rdfs:label><xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-schools']/api:text"/></rdfs:label>
 	                <svo:smush>organization:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-schools']/api:text"/></svo:smush>               
+              </rdf:Description>
+              
+            </rdf:RDF>
+          </xsl:template>
+
+          <xsl:template match="api:object[@category='activity' and @type-id=36]" mode="type23">
+           <!--  Research Center -->
+            <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
+                  
+            <rdf:RDF 
+                xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
+                xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' 
+                xmlns:core='http://vivoweb.org/ontology/core#' 
+                xmlns:svo='http://www.symplectic.co.uk/vivo/' 
+                xmlns:api='http://www.symplectic.co.uk/publications/api'
+                xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'
+                >
+               <xsl:variable name="id" select="@id" />
+                
+              <!--  link to the person -->
+	              <rdf:Description rdf:about="{$baseURI}{$username}">
+                    <xsl:for-each select="api:records/api:record/api:native/api:field[@name='c-keywords']/api:items/api:item" >
+                        <xsl:variable name="p" select="position()" />
+	                   <core:currentMemberOf rdf:resource="{$baseURI}researchcenter{$id}-{$p}" />
+	                </xsl:for-each>
+	              </rdf:Description>
+	
+	              
+              <xsl:for-each select="api:records/api:record/api:native/api:field[@name='c-keywords']/api:items/api:item" >
+                  <xsl:variable name="p" select="position()" />
+	              <rdf:Description rdf:about="{$baseURI}researchcenter{$id}-{$p}">
+	                    <rdf:type rdf:resource="http://vivoweb.org/ontology/core#ResearchOrganization"/>
+	                    <core:hasCurrentMember rdf:resource="{$baseURI}{$username}" />
+	                    <rdfs:label><xsl:value-of select="."/></rdfs:label>
+	                    <svo:smush>organization:<xsl:value-of select="."/></svo:smush>               
+	              </rdf:Description>
+              </xsl:for-each>
+              
+            </rdf:RDF>
+          </xsl:template>
+
+          <xsl:template match="api:object[@category='activity' and @type-id=31]" mode="type23">
+           <!--  Academic Group -->
+            <xsl:variable name="username" select="ancestor::api:relationship/api:related[@direction='to']/api:object/@username" /> 
+                  
+            <rdf:RDF 
+                xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
+                xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' 
+                xmlns:core='http://vivoweb.org/ontology/core#' 
+                xmlns:svo='http://www.symplectic.co.uk/vivo/' 
+                xmlns:api='http://www.symplectic.co.uk/publications/api'
+                xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'
+                >
+                
+              <!--  link to the person -->
+              <rdf:Description rdf:about="{$baseURI}{$username}">
+                <core:currentMemberOf rdf:resource="{$baseURI}academicgroup{@id}" />
+              </rdf:Description>
+
+              <rdf:Description rdf:about="{$baseURI}academicgroup{@id}">
+                    <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Group"/>
+                    <core:hasCurrentMember rdf:resource="{$baseURI}{$username}" />
+                    <rdfs:label><xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-comments']/api:text"/></rdfs:label>
+                    <svo:smush>organization:<xsl:value-of select="api:records/api:record/api:native/api:field[@name='c-comments']/api:text"/></svo:smush>               
               </rdf:Description>
               
             </rdf:RDF>

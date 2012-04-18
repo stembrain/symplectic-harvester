@@ -125,7 +125,7 @@
                         <rdf:type rdf:resource="http://vivoweb.org/ontology/core#InformationResource"/>
                         <rdf:type rdf:resource="http://purl.org/ontology/bibo/Document"/>
                         <rdf:type rdf:resource="http://purl.org/ontology/bibo/Book"/>
-                        <rdf:type rdf:resource="http://purl.org/ontology/bibo/Proceedings"/>
+                        <rdf:type rdf:resource="http://purl.org/ontology/bibo/Chapter"/>
                     </xsl:when>
                     <xsl:when test="@type-id=4"> <!-- Confernce Paper  -->
                         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>

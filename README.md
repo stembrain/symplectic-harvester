@@ -73,8 +73,9 @@ to
 
 * Once configured there are 3 scripts you may run.
     * __run-fetch-only.sh__: this fetches all data staring from the list of users from a Symplectic Elements API. It performs a maximum of 10K URL requests and then exits. It stores its data under data/raw-records and checkpoints the state of the fetch in 2 binary files, loadstate and loadstate-failed. At the end of each run, all the data and the state of the fetch are copied to datasafe/. The fetch operation may be restarted multiple times and will complete when there are no pending URLs to be loaded. The file loadstate contains the pending URLs and the fetched URLs. loadstate-failed contains the urls that failed. The contents of these files are listed at the end of each run.
-   * __run-ingest-only.sh__: this takes the data in data/raw-records and ingests it into Vivo. At each step, only new data is processed and the final state of the previous harvest operation is stored in previous-harvest/
-* run-symplectic.sh: combines run-fetch-only.sh and run-ingest-only.sh, once a system has been hargested for the first time, this is probably the best script to use.
+   * __run-prepareingest-only.sh__: this takes the data in data/raw-records and prepares and ingest in the form of a set of additions and subtractions. The additions and subtractions are calculated based on the state of the previous harvest, but the state of the previous harvest is not updated/
+   * __run-ingest-only.sh__: this takes the data from __run-prepareingests-only.sh__ and applies it to the Vivo database, as well as updating the previous harvest. It also searches for identical records in the Vivo database and joins them together "smush"ing./
+* run-symplectic.sh: combines run-fetch-only.sh, run-prepareingest-only.sh and run-ingest-only.sh, once a system has been hargested for the first time, this is probably the best script to use.
    * __remote-last-symplectic-harvest.sh__: removes the last harvest from vivo and updates the previous harvest model. Unless addition and subtraction files have been saved at each harvest operation, this can only be performed once. ie it will only remove the last harvest, not the one before that.
    * __jenna-connect.sh__: allows abritary SPARQL queries to be run agains any of the models eg jenna-connect.sh vivi.model.xml will run select ?s ?p ?v where ( ?s ?p ?v ) aginst the vivo data model. (expect lots and lots of output if you do that)
 
@@ -85,7 +86,8 @@ to
 I recommend that you do 
 
 
-    sh run-fetch-only.sh   
+    sh run-fetch-only.sh
+	sh run-prepareingest-only.sh
     sh run-ingest-only.sh
 
 
@@ -103,10 +105,12 @@ The fetch operation does not currently support re-fetching new resources, howeve
     rm -rf data
     rm -rf previous-harvest
     
-    # clean the database containing the fetch state. In mysql this table is called symplectic_fetch
+    # clean the database containing the fetch state. In mysql this table is called symplectic_fetch. 
+    ie delete from symplectic_fetch
     
     sh run-fetch-only.sh
     # repeat the above until there is no more data to fetch
+    sh run-prepareingest-only.sh
     sh run-ingest-only.sh
 
 

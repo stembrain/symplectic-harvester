@@ -101,6 +101,15 @@ after that.
 
 The fetch operation does not currently support re-fetching new resources, however it will fetch items that appear in a list, if the updateLists parameter is set to true. To completely update from scratch, do the following.
 
+### Delete the Vivo Database (Optional Only if you want an Absolutely clean build)
+
+    Stop the Vivo Tomcat instance
+    Drop and recreate the MySQL Database used by Vivo
+    Start the Vivo Tomcat instance up
+    Wait for the Vivo Tomcat instance to complete initializing the Vivo Database.
+    Login as administor and re-create any users.
+    
+### Perform a complete re-ingest.
 
     rm -rf data
     rm -rf previous-harvest
@@ -108,10 +117,13 @@ The fetch operation does not currently support re-fetching new resources, howeve
     # clean the database containing the fetch state. In mysql this table is called symplectic_fetch. 
     ie delete from symplectic_fetch
     
+ 
+    
     sh run-fetch-only.sh
     # repeat the above until there is no more data to fetch
     sh run-prepareingest-only.sh
     sh run-ingest-only.sh
+
 
 
 ## Issues

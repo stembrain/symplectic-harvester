@@ -26,7 +26,6 @@
 				xmlns:vitro-public="http://vitro.mannlib.cornell.edu/ns/vitro/public#"
 				xmlns:ufVivo='http://vivo.ufl.edu/ontology/vivo-ufl/'
 				xmlns:bibo='http://purl.org/ontology/bibo/'>
-        <xsl:if test="api:organisation-defined-data[@field-name='Is Academic']='1'">
 				
 				<!--  Main user object -->
 			    <rdf:Description rdf:about="{$baseURI}{@username}">
@@ -98,7 +97,6 @@
 				 </rdf:Description>
                 <xsl:apply-templates select="api:records/api:record[1]" mode="objectEntries" /> 
                 <xsl:apply-templates select="api:organisation-defined-data" mode="objectEntries" />
-        </xsl:if>
 		</rdf:RDF>
 	</xsl:template>
 	<xsl:template match="/svo:object/api:object[@category='publication']">

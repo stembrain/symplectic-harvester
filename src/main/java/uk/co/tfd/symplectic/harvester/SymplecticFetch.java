@@ -168,7 +168,7 @@ public class SymplecticFetch {
 		
 		// re-scan relationships to extract API objects
 		// reScanRelationships(progress);
-		progress.toload(baseUrl + "/objects?categories=user", new APIObjects(rh, "users", progress,
+		progress.toload(baseUrl + "/objects?categories=users&groups=3", new APIObjects(rh, "users", progress,
 				limitListPages, objectTypes));
 		// progress.toload(baseUrl+"publication", new APIObjects(rh,
 		// "publications", progress));

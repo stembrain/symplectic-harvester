@@ -1227,10 +1227,17 @@ Activities are processed via relationships since they always appear to be bound 
 				<xsl:otherwise><xsl:value-of select="api:month" /></xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
+        <xsl:variable name="day">
+            <xsl:choose>
+                <xsl:when
+                    test="string-length(api:day)=1">0<xsl:value-of select="api:day" /></xsl:when>
+                <xsl:otherwise><xsl:value-of select="api:day" /></xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
 		
 		<xsl:variable name="aboutURI">
 			<xsl:choose>
-			<xsl:when test="$datePrecision='yearMonthDayPrecision'" >pub/daymonthyear<xsl:value-of select="api:year" /><xsl:value-of select="$month" /><xsl:value-of select="api:day" /></xsl:when>
+			<xsl:when test="$datePrecision='yearMonthDayPrecision'" >pub/daymonthyear<xsl:value-of select="api:year" /><xsl:value-of select="$month" /><xsl:value-of select="$day" /></xsl:when>
 			<xsl:when test="$datePrecision='yearMonthPrecision'" >pub/monthyear<xsl:value-of select="api:year" /><xsl:value-of select="$month" /></xsl:when>
 			<xsl:when test="$datePrecision='yearPrecision'" >pub/year<xsl:value-of select="api:year" /></xsl:when>
 			</xsl:choose>
@@ -1241,7 +1248,7 @@ Activities are processed via relationships since they always appear to be bound 
 				rdf:resource="http://vivoweb.org/ontology/core#{$datePrecision}" />
 			<core:dateTime rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">
 				<xsl:choose>
-					<xsl:when test="$datePrecision='yearMonthDayPrecision'" ><xsl:value-of select="api:year" />-<xsl:value-of select="$month" />-<xsl:value-of select="api:day" />T00:00:00Z</xsl:when>
+					<xsl:when test="$datePrecision='yearMonthDayPrecision'" ><xsl:value-of select="api:year" />-<xsl:value-of select="$month" />-<xsl:value-of select="$day" />T00:00:00Z</xsl:when>
 					<xsl:when test="$datePrecision='yearMonthPrecision'" ><xsl:value-of select="api:year" />-<xsl:value-of select="$month" />-01T00:00:00Z</xsl:when>
 					<xsl:when test="$datePrecision='yearPrecision'" ><xsl:value-of select="api:year" />-01-01T00:00:00Z</xsl:when>
 				</xsl:choose>

@@ -57,4 +57,11 @@ public interface ProgressTracker {
 	 */
 	void checkpoint() throws IOException;
 
+        /**
+         * Categories that are excluded
+         * @param category
+         * @return true is excluded, false if included
+         */
+        boolean isExcludedRelationshipObjectType(String objectType);
+
 }

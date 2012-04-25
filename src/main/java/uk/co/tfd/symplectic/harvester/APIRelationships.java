@@ -9,7 +9,7 @@ import org.w3c.dom.Node;
 
 public class APIRelationships implements AtomEntryLoader, AtomEntryListLoader {
 
-	private RecordHandler rh;
+    private RecordHandler rh;
 	private String type;
 	private ProgressTracker tracker;
 	private int limitListPages;
@@ -58,7 +58,9 @@ public class APIRelationships implements AtomEntryLoader, AtomEntryListLoader {
 				String category = XmlAide.findAttribute(object, "category");
 				String href = XmlAide.findAttribute(object, "href");
 				if ( category != null && href != null ) {
+				    if ( !tracker.isExcludedRelationshipObjectType(category)) {
 					tracker.toload(href, new APIObject(rh, category, tracker, limitListPages, objectTypes));
+				    }
 				}
 				String relationshipsHref = XmlAide.findAttribute(object, "api:relationships",  "href");
 				if ( relationshipsHref != null  ) {

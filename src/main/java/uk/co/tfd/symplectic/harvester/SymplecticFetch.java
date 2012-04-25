@@ -23,10 +23,12 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
@@ -69,7 +71,24 @@ public class SymplecticFetch {
 	 * no default, required
 	 */
 	private static final String URL_ARG = "url";
+	/**
+	 * String Argument name: a , separated list of object types that will be encountered including
+	 * those in the initial seed of the graph.
+	 */
         private static final String OBJECT_TYPES_ARG = "categories";
+        /**
+         * String Argument name: A , separated list of categories that should not be loaded from
+         * relationships, no default required.
+         */
+        private static final String EXCLUDED_RELATIONSHIP_OBJECT_TYPES_ARG = "excludeRelationshipObjectCategories";
+
+        
+        /**
+         * String Argument name: THe query URL used to seed the fetch operation.
+         * defaults to baseUrl + "/objects?categories=users"
+         */
+        private static final String SEED_QUERY_URL_ARG = "seedQuery";
+
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(SymplecticFetch.class);
 	private static String database = "symplectic";
@@ -80,6 +99,8 @@ public class SymplecticFetch {
 	private boolean updateLists;
     private String[] objectTypes;
     private long lastLog = System.currentTimeMillis();
+    private Set<String> excludedRelationshipObjectTypes;
+    private String seedQueryUrl;
 
 	protected SymplecticFetch(RecordHandler rh, String database) {
 		if (rh == null) {
@@ -107,14 +128,31 @@ public class SymplecticFetch {
 		limitListPages = Integer.parseInt(argList.get(LIMIT_LIST_PAGES_ARG));
 		updateLists = Boolean.parseBoolean(argList.get(UPDATE_LIST_ARG));
 		objectTypes = StringUtils.split(argList.get(OBJECT_TYPES_ARG),",");
+		excludedRelationshipObjectTypes = toSet(StringUtils.split(argList.get(EXCLUDED_RELATIONSHIP_OBJECT_TYPES_ARG),","));
+		seedQueryUrl = argList.get(SEED_QUERY_URL_ARG);
+		if (seedQueryUrl == null || seedQueryUrl.trim().length() == 0 ) {
+		    seedQueryUrl = baseUrl + "/objects?categories=users";
+		}
 		LOGGER.info("Config: Elements API at {} ",baseUrl);
+                LOGGER.info("Config: Seed Query {} ",seedQueryUrl);
 		LOGGER.info("Config: Max Number of URLs to fetch {} ",maxUrlFetch);
 		LOGGER.info("Config: Max Number of Pages to list {} ",limitListPages);
 		LOGGER.info("Config: Refetch lists {} ",updateLists);
+		LOGGER.info("Config: Object Types {} ",Arrays.toString(objectTypes));
+                LOGGER.info("Config: Excluded Types in relationships {} ",Arrays.toString(excludedRelationshipObjectTypes.toArray()));                
 		LOGGER.info("To change any of these edit {} ",argList.get("X"));
 	}
 
-	public static void main(String[] args) {
+
+    private Set<String> toSet(String[] values) {
+        Set<String> s = new HashSet<String>();
+        for (String v : values) {
+            s.add(v);
+        }
+        return s;
+    }
+
+    public static void main(String[] args) {
 		try {
 			InitLog.initLogger(args, getParser("SymplecticFetch", database));
 			LOGGER.info("SymplecticFetch: Start");
@@ -155,20 +193,21 @@ public class SymplecticFetch {
 			TransformerException {
 		ProgressTracker progress = null;
 		try {
-			progress = new JDBCProgressTrackerImpl(rh, limitListPages, updateLists, objectTypes);
+			progress = new JDBCProgressTrackerImpl(rh, limitListPages, updateLists, objectTypes, excludedRelationshipObjectTypes);
 		} catch (SQLException e) {
 			LOGGER.info(e.getMessage(),e);
 			progress = new FileProgressTrackerImpl("loadstate", rh,
-					limitListPages, updateLists, objectTypes);
+					limitListPages, updateLists, objectTypes, excludedRelationshipObjectTypes);
 		} catch (IOException e ) {
 			LOGGER.info(e.getMessage(),e);
 			progress = new FileProgressTrackerImpl("loadstate", rh,
-					limitListPages, updateLists, objectTypes);			
+					limitListPages, updateLists, objectTypes, excludedRelationshipObjectTypes);			
 		}
 		
 		// re-scan relationships to extract API objects
 		// reScanRelationships(progress);
-		progress.toload(baseUrl + "/objects?categories=users&groups=3", new APIObjects(rh, "users", progress,
+		// baseUrl + "/objects?categories=users&groups=3"
+		progress.toload(seedQueryUrl, new APIObjects(rh, "users", progress,
 				limitListPages, objectTypes));
 		// progress.toload(baseUrl+"publication", new APIObjects(rh,
 		// "publications", progress));
@@ -300,6 +339,14 @@ public class SymplecticFetch {
                         .withParameter(true, "category")
                         .setDefaultValue("user,publication,grant,activity")
                         .setDescription("Categories to extract"));
+                parser.addArgument(new ArgDef().setLongOpt(EXCLUDED_RELATIONSHIP_OBJECT_TYPES_ARG).setRequired(false)
+                        .withParameter(true, "exclude")
+                        .setDefaultValue("user")
+                        .setDescription("Categories to exclude from crawl through relationships"));
+                parser.addArgument(new ArgDef().setLongOpt(SEED_QUERY_URL_ARG).setRequired(false)
+                        .withParameter(true, "seed")
+                        .setDefaultValue("")
+                        .setDescription("The seed url used to seed the graph of objects"));
 		parser.addArgument(new ArgDef()
 				.setLongOpt(UPDATE_LIST_ARG)
 				.setRequired(false)

@@ -6,6 +6,8 @@ package uk.co.tfd.symplectic.harvester;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +26,7 @@ public class APIRelationship implements AtomEntryLoader, RecordStreamOrigin {
 	private RecordHandler rh;
 	private String type;
 	private ProgressTracker tracker;
-	private APIObject[] apiObjects;
+	private List<APIObject> apiObjects;
 	protected XMLRecordOutputStream baseXMLROS = new XMLRecordOutputStream(
 			new String[] { "api:relationship" },
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<relationship xmlns=\"http://www.symplectic.co.uk/vivo/\" xmlns:api=\"http://www.symplectic.co.uk/publications/api\">\n",
@@ -37,10 +39,11 @@ public class APIRelationship implements AtomEntryLoader, RecordStreamOrigin {
 		this.rh = rh;
 		this.type = "relationship";
 		this.tracker = tracker;
-		apiObjects = new APIObject[objectTypes.length];
+                apiObjects = new ArrayList<APIObject>();
 		for (int i = 0; i < objectTypes.length; i++) {
-		    apiObjects[i] = new APIObject(rh, objectTypes[i], tracker, limitListPages, objectTypes);
-		    
+		    if ( !tracker.isExcludedRelationshipObjectType(objectTypes[i])) {
+		        apiObjects.add(new APIObject(rh, objectTypes[i], tracker, limitListPages, objectTypes));
+		    }
 		}
 	}
 	

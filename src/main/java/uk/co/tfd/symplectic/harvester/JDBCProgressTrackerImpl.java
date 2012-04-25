@@ -15,6 +15,7 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -61,13 +62,15 @@ public class JDBCProgressTrackerImpl implements ProgressTracker {
     private Node dialectNode;
     private Object dblock = new Object();
     private String[] objectTypes;
+    private Set<String> excludedRelationshipObjectTypes;
 
-    public JDBCProgressTrackerImpl(RecordHandler recordHandler, int limitListPages, boolean updateLists, String[] objectTypes)
+    public JDBCProgressTrackerImpl(RecordHandler recordHandler, int limitListPages, boolean updateLists, String[] objectTypes, Set<String> excludedRelationshipObjectTypes)
             throws SQLException, IOException {
         connect(getSql(JDBC_URL), getSql(JDBC_CLASS), getSql(JDBC_USER), getSql(JDBC_PASSWORD));
         create();
         this.recordHandler = recordHandler;
         this.limitListPages = limitListPages;
+        this.excludedRelationshipObjectTypes = excludedRelationshipObjectTypes;
         this.updateLists = updateLists;
         this.objectTypes = objectTypes;
         reloadBefore = new Timestamp(System.currentTimeMillis() - (Long.parseLong(getConfigProperty(MAX_URL_AGE)) * 1000L));
@@ -619,6 +622,11 @@ public class JDBCProgressTrackerImpl implements ProgressTracker {
             }
         }
 
+    }
+
+    @Override
+    public boolean isExcludedRelationshipObjectType(String category) {
+        return excludedRelationshipObjectTypes.contains(category);
     }
 
 }

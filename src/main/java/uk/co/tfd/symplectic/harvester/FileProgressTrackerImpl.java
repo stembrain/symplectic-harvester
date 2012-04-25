@@ -40,8 +40,9 @@ public class FileProgressTrackerImpl implements ProgressTracker {
 	private int limitListPages;
 	private boolean updateLists;
     private String[] objectTypes;
+    private Set<String> excludedRelationshipObjectTypes;
 
-	public FileProgressTrackerImpl(String fileName, RecordHandler recordHandler, int limitListPages, boolean updateLists, String[] objectTypes) {
+	public FileProgressTrackerImpl(String fileName, RecordHandler recordHandler, int limitListPages, boolean updateLists, String[] objectTypes, Set<String> excludedRelationshipObjectTypes) {
 		chkFile = new File(fileName + ".chk");
 		loadstateFile = new File(fileName);
 		loadstateFileSafe = new File(fileName + ".safe");
@@ -50,6 +51,7 @@ public class FileProgressTrackerImpl implements ProgressTracker {
 		failedFileSafe = new File(fileName + "-failed.safe");
 		this.recordHandler = recordHandler;
 		this.limitListPages = limitListPages;
+		this.excludedRelationshipObjectTypes = excludedRelationshipObjectTypes;
 		this.updateLists = updateLists;
 		this.objectTypes = objectTypes;
 		try {
@@ -259,6 +261,12 @@ public class FileProgressTrackerImpl implements ProgressTracker {
 	public boolean isLoaded(String url) {
 		return loaded.contains(url);
 	}
+
+    @Override
+    public boolean isExcludedRelationshipObjectType(String category) {
+        
+        return excludedRelationshipObjectTypes.contains(category);
+    }
 
 
 }
